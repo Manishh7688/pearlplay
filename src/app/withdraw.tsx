@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   StyleSheet,
   View,
@@ -11,13 +11,17 @@ import {
 import { useRouter } from 'expo-router';
 import { Icon as Ionicons } from '@/components/ui/icon';
 import { useTheme } from '@/hooks/use-theme';
-import { useBankDetails, useUserProfile } from '@/hooks/use-queries';
+import { useBankDetails, useTransactions, useUserActivePlans, useUserProfile } from '@/hooks/use-queries';
 import { useWithdrawMutation } from '@/hooks/use-mutations';
 import { ScreenHeader } from '@/components/ui/screen-header';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/components/ui/toast';
+import { VipWithdrawalModal } from '@/components/ui/vip-withdrawal-modal';
+import { InvestModal } from '@/components/ui/invest-modal';
+import { checkVipWithdrawalStatus } from '@/services/vip-rules';
+import { Plan } from '@/types';
 import { Radius, Shadows, Spacing } from '@/theme';
 
 export default function WithdrawScreen() {
@@ -27,21 +31,41 @@ export default function WithdrawScreen() {
 
   const { data: user } = useUserProfile();
   const { data: bank } = useBankDetails();
+  const { data: userPlans = [] } = useUserActivePlans();
+  const { data: transactions = [] } = useTransactions();
   const withdrawMutation = useWithdrawMutation();
 
   const [amount, setAmount] = useState<string>('150');
   const [errorMessage, setErrorMessage] = useState<string>('');
+  const [showVipModal, setShowVipModal] = useState<boolean>(false);
+  const [selectedVipForInvest, setSelectedVipForInvest] = useState<Plan | null>(null);
 
   const currentBalance = user?.balance ?? 0;
   const numericAmount = parseFloat(amount) || 0;
   const isBankBound = !!bank?.isBound && !!bank?.accountNumber;
 
+  const vipStatus = checkVipWithdrawalStatus(userPlans, transactions, currentBalance);
+
+  // Auto-show VIP popup if withdrawal is locked when opening screen
+  useEffect(() => {
+    if (!vipStatus.canWithdraw && vipStatus.requiredPlan) {
+      setShowVipModal(true);
+    }
+  }, [vipStatus.canWithdraw]);
+
   const handleWithdrawAll = () => {
-    setAmount(Math.floor(currentBalance).toString());
+    const maxLimit = vipStatus.maxWithdrawableAmount;
+    setAmount(Math.max(150, maxLimit).toString());
     setErrorMessage('');
   };
 
   const handleWithdraw = () => {
+    if (!vipStatus.canWithdraw) {
+      setShowVipModal(true);
+      setErrorMessage(vipStatus.statusMessage);
+      return;
+    }
+
     if (!isBankBound) {
       setErrorMessage('Please bind your bank details first.');
       router.push('/bank-details');
@@ -55,6 +79,13 @@ export default function WithdrawScreen() {
 
     if (numericAmount > 10000) {
       setErrorMessage('Maximum single withdrawal limit is ₹10,000');
+      return;
+    }
+
+    if (vipStatus.maxPercentage < 1.0 && numericAmount > vipStatus.maxWithdrawableAmount) {
+      setErrorMessage(
+        `VIP 1 Limit: You can withdraw a maximum of 80% of your balance (₹${vipStatus.maxWithdrawableAmount.toLocaleString()}).`
+      );
       return;
     }
 
@@ -95,6 +126,95 @@ export default function WithdrawScreen() {
       <ScrollView
         showsVerticalScrollIndicator={false}
         contentContainerStyle={styles.content}>
+        {/* VIP Status & Tier Indicator Card */}
+        <View
+          style={[
+            styles.vipCard,
+            {
+              backgroundColor: vipStatus.hasAllVip
+                ? '#1E3A8A'
+                : vipStatus.canWithdraw
+                ? theme.surface
+                : theme.surface,
+              borderColor: vipStatus.hasAllVip
+                ? '#3B82F6'
+                : vipStatus.canWithdraw
+                ? theme.vipBorder
+                : theme.warning,
+            },
+          ]}>
+          <View style={styles.vipHeader}>
+            <View
+              style={[
+                styles.vipIconCircle,
+                {
+                  backgroundColor: vipStatus.hasAllVip
+                    ? '#3B82F6'
+                    : vipStatus.canWithdraw
+                    ? theme.vipLight
+                    : theme.warningLight,
+                },
+              ]}>
+              <Ionicons
+                name={vipStatus.hasAllVip ? 'crown' : vipStatus.canWithdraw ? 'star' : 'lock-outline'}
+                size={22}
+                color={
+                  vipStatus.hasAllVip
+                    ? '#FFFFFF'
+                    : vipStatus.canWithdraw
+                    ? theme.vipDark
+                    : theme.warning
+                }
+              />
+            </View>
+
+            <View style={{ flex: 1 }}>
+              <View style={styles.vipTagRow}>
+                <Badge
+                  variant={vipStatus.hasAllVip ? 'vip' : vipStatus.canWithdraw ? 'success' : 'warning'}
+                  size="sm">
+                  {vipStatus.hasAllVip
+                    ? 'ALL VIP TIERS ACTIVE'
+                    : vipStatus.hasVip2
+                    ? 'VIP 2 ACTIVE'
+                    : vipStatus.hasVip1
+                    ? 'VIP 1 ACTIVE (80%)'
+                    : 'VIP PLAN REQUIRED'}
+                </Badge>
+                <Text
+                  style={[
+                    styles.counterLabel,
+                    { color: vipStatus.hasAllVip ? '#93C5FD' : theme.textSecondary },
+                  ]}>
+                  {vipStatus.withdrawCount === 0
+                    ? '1st Payout'
+                    : vipStatus.withdrawCount === 1
+                    ? '2nd Payout'
+                    : `${vipStatus.withdrawCount + 1}th Payout`}
+                </Text>
+              </View>
+
+              <Text
+                style={[
+                  styles.vipStatusMsg,
+                  { color: vipStatus.hasAllVip ? '#FFFFFF' : theme.text },
+                ]}>
+                {vipStatus.statusMessage}
+              </Text>
+            </View>
+
+            {!vipStatus.canWithdraw && vipStatus.requiredPlan ? (
+              <Button
+                variant="vip"
+                size="sm"
+                fullWidth={false}
+                onPress={() => setShowVipModal(true)}>
+                Get VIP
+              </Button>
+            ) : null}
+          </View>
+        </View>
+
         {/* Balance Card */}
         <View
           style={[
@@ -107,13 +227,20 @@ export default function WithdrawScreen() {
           <View>
             <Text style={styles.balanceLabel}>Withdrawable Balance</Text>
             <Text style={styles.balanceVal}>₹{currentBalance.toFixed(2)}</Text>
+            {vipStatus.maxPercentage < 1.0 ? (
+              <Text style={styles.maxAllowedNote}>
+                Max Allowed (80%): ₹{vipStatus.maxWithdrawableAmount.toLocaleString()}
+              </Text>
+            ) : null}
           </View>
 
           <TouchableOpacity
             activeOpacity={0.8}
             onPress={handleWithdrawAll}
             style={[styles.allBtn, { backgroundColor: '#10B981' }]}>
-            <Text style={styles.allBtnText}>Withdraw All</Text>
+            <Text style={styles.allBtnText}>
+              {vipStatus.maxPercentage < 1.0 ? 'Withdraw 80%' : 'Withdraw All'}
+            </Text>
           </TouchableOpacity>
         </View>
 
@@ -195,36 +322,43 @@ export default function WithdrawScreen() {
             placeholder="Min ₹150, Max ₹10,000"
             prefix={<Text style={[styles.currencyPrefix, { color: theme.primary }]}>₹</Text>}
             error={errorMessage}
-            hint="Daily unlimited withdrawals • Handling Fee: ₹0.00 (0%)"
+            hint={
+              vipStatus.maxPercentage < 1.0
+                ? `VIP 1 Active: Max 80% (₹${vipStatus.maxWithdrawableAmount.toLocaleString()}) allowed`
+                : '100% full balance withdrawal allowed • 0% Handling Fee'
+            }
           />
         </View>
 
         {/* Quick Amount Pills */}
         <View style={styles.pillsRow}>
-          {[150, 500, 1000, 2500, 5000].map((val) => (
-            <TouchableOpacity
-              key={val}
-              activeOpacity={0.75}
-              onPress={() => {
-                setAmount(val.toString());
-                setErrorMessage('');
-              }}
-              style={[
-                styles.pillBtn,
-                {
-                  backgroundColor: numericAmount === val ? theme.primary : theme.surface,
-                  borderColor: numericAmount === val ? theme.primary : theme.border,
-                },
-              ]}>
-              <Text
+          {[150, 500, 1000, 2500, Math.min(vipStatus.maxWithdrawableAmount, 10000)].map((val) => {
+            if (val <= 0) return null;
+            return (
+              <TouchableOpacity
+                key={val}
+                activeOpacity={0.75}
+                onPress={() => {
+                  setAmount(val.toString());
+                  setErrorMessage('');
+                }}
                 style={[
-                  styles.pillText,
-                  { color: numericAmount === val ? '#FFFFFF' : theme.text },
+                  styles.pillBtn,
+                  {
+                    backgroundColor: numericAmount === val ? theme.primary : theme.surface,
+                    borderColor: numericAmount === val ? theme.primary : theme.border,
+                  },
                 ]}>
-                ₹{val}
-              </Text>
-            </TouchableOpacity>
-          ))}
+                <Text
+                  style={[
+                    styles.pillText,
+                    { color: numericAmount === val ? '#FFFFFF' : theme.text },
+                  ]}>
+                  ₹{val.toLocaleString()}
+                </Text>
+              </TouchableOpacity>
+            );
+          })}
         </View>
 
         {/* Financial Calculation Summary */}
@@ -252,38 +386,70 @@ export default function WithdrawScreen() {
           </View>
         </View>
 
-        {/* Platform Withdrawal Policy */}
+        {/* VIP Withdrawal Policy Checklist */}
         <View
           style={[
             styles.policyCard,
             { backgroundColor: theme.surfaceSubtle, borderColor: theme.borderSubtle },
           ]}>
           <Text style={[styles.policyHeader, { color: theme.text }]}>
-            Withdrawal Instructions
+            VIP Withdrawal Policy Rules
           </Text>
           <Text style={[styles.policyItem, { color: theme.textSecondary }]}>
-            • Minimum withdrawal: ₹150 | Maximum single withdrawal: ₹10,000.
+            • <Text style={{ fontWeight: '700' }}>1st Withdrawal:</Text> Requires Subscription VIP 1. Allows up to 80% of balance.
           </Text>
           <Text style={[styles.policyItem, { color: theme.textSecondary }]}>
-            • Unlimited number of withdrawals per day, processed 24/7.
+            • <Text style={{ fontWeight: '700' }}>2nd Withdrawal:</Text> Requires Subscription VIP 2 to process.
           </Text>
           <Text style={[styles.policyItem, { color: theme.textSecondary }]}>
-            • Funds are transferred directly to your bank account via IMPS/NEFT within minutes.
+            • <Text style={{ fontWeight: '700' }}>Unlimited Access:</Text> Purchase all VIP plans for 100% unrestricted withdrawals.
+          </Text>
+          <Text style={[styles.policyItem, { color: theme.textSecondary }]}>
+            • Min ₹150, max ₹10,000 single transaction. Instant IMPS/NEFT settlement.
           </Text>
         </View>
 
         {/* Submit Button */}
         <View style={styles.actionSection}>
           <Button
-            variant="primary"
+            variant={vipStatus.canWithdraw ? 'primary' : 'vip'}
             size="lg"
             loading={withdrawMutation.isPending}
             onPress={handleWithdraw}
-            leftIcon={<Ionicons name="checkmark-circle-outline" size={20} color="#FFFFFF" />}>
-            Submit Withdrawal Request
+            leftIcon={
+              <Ionicons
+                name={vipStatus.canWithdraw ? 'checkmark-circle-outline' : 'lock-open-outline'}
+                size={20}
+                color="#FFFFFF"
+              />
+            }>
+            {vipStatus.canWithdraw
+              ? `Submit Withdrawal (₹${numericAmount.toLocaleString()})`
+              : 'Unlock Withdrawal with VIP Plan'}
           </Button>
         </View>
       </ScrollView>
+
+      {/* VIP Upgrade Modal */}
+      <VipWithdrawalModal
+        visible={showVipModal}
+        onClose={() => setShowVipModal(false)}
+        requiredVip={vipStatus.requiredVip}
+        requiredPlan={vipStatus.requiredPlan}
+        withdrawCount={vipStatus.withdrawCount}
+        onSelectPlanForInvest={(plan) => {
+          setShowVipModal(false);
+          setSelectedVipForInvest(plan);
+        }}
+      />
+
+      {/* Direct Investment Modal for Purchasing Required VIP */}
+      <InvestModal
+        plan={selectedVipForInvest}
+        user={user}
+        visible={!!selectedVipForInvest}
+        onClose={() => setSelectedVipForInvest(null)}
+      />
     </KeyboardAvoidingView>
   );
 }
@@ -298,6 +464,40 @@ const styles = StyleSheet.create({
     alignSelf: 'center',
     padding: Spacing.four,
     paddingBottom: Spacing.seven,
+  },
+  vipCard: {
+    borderRadius: Radius.lg,
+    padding: Spacing.three,
+    borderWidth: 1.5,
+    marginBottom: Spacing.three,
+    ...Shadows.sm,
+  },
+  vipHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.two,
+  },
+  vipIconCircle: {
+    width: 40,
+    height: 40,
+    borderRadius: Radius.full,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  vipTagRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.two,
+    marginBottom: 2,
+  },
+  counterLabel: {
+    fontSize: 11,
+    fontWeight: '700',
+  },
+  vipStatusMsg: {
+    fontSize: 12,
+    fontWeight: '700',
+    lineHeight: 16,
   },
   balanceCard: {
     flexDirection: 'row',
@@ -321,8 +521,14 @@ const styles = StyleSheet.create({
     fontWeight: '900',
     marginTop: 2,
   },
+  maxAllowedNote: {
+    color: '#FDE68A',
+    fontSize: 11,
+    fontWeight: '700',
+    marginTop: 2,
+  },
   allBtn: {
-    paddingVertical: 6,
+    paddingVertical: 8,
     paddingHorizontal: 12,
     borderRadius: Radius.full,
   },

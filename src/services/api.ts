@@ -14,6 +14,7 @@ import {
   VALID_GIFT_CODES,
 } from './mock-data';
 import { StorageService } from './storage';
+import { checkVipWithdrawalStatus } from './vip-rules';
 
 const delay = (ms: number = 400) => new Promise((resolve) => setTimeout(resolve, ms));
 
@@ -128,6 +129,24 @@ export const ApiService = {
       throw new Error('Please bind your bank account details before requesting a withdrawal.');
     }
 
+    const currentProfile = await StorageService.getUserProfile();
+    const userPlans = await StorageService.getUserPlans();
+    const transactions = await StorageService.getTransactions();
+
+    const vipStatus = checkVipWithdrawalStatus(userPlans, transactions, currentProfile.balance);
+
+    if (!vipStatus.canWithdraw && vipStatus.requiredPlan) {
+      throw new Error(
+        `VIP Upgrade Required: Please activate ${vipStatus.requiredPlan.subscription} to proceed with this withdrawal.`
+      );
+    }
+
+    if (vipStatus.maxPercentage < 1.0 && amount > vipStatus.maxWithdrawableAmount) {
+      throw new Error(
+        `VIP 1 Limit: With VIP 1, you can withdraw a maximum of 80% of your balance (₹${vipStatus.maxWithdrawableAmount.toLocaleString()}).`
+      );
+    }
+
     const notice = INITIAL_PLATFORM_NOTICE;
     if (amount < notice.minWithdrawal) {
       throw new Error(`Minimum withdrawal amount is ₹${notice.minWithdrawal}`);
@@ -136,7 +155,6 @@ export const ApiService = {
       throw new Error(`Maximum single withdrawal limit is ₹${notice.maxWithdrawal}`);
     }
 
-    const currentProfile = await StorageService.getUserProfile();
     if (currentProfile.balance < amount) {
       throw new Error(
         `Insufficient balance. Current balance is ₹${currentProfile.balance.toFixed(2)}, requested ₹${amount}`
