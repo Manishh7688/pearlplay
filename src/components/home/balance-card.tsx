@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { StyleSheet, View, Text, TouchableOpacity } from 'react-native';
 import { useRouter } from 'expo-router';
-import { Ionicons } from '@expo/vector-icons';
+import { Icon } from '@/components/ui/icon';
 import { UserProfile } from '@/types';
 import { useTheme } from '@/hooks/use-theme';
 import { Radius, Shadows, Spacing } from '@/theme';
@@ -26,8 +26,8 @@ export function BalanceCard({ user, isLoading }: BalanceCardProps) {
       style={[
         styles.card,
         {
-          backgroundColor: theme.primaryDark,
-          borderColor: theme.primaryBorder,
+          backgroundColor: theme.hero,
+          borderColor: 'transparent',
         },
       ]}>
       {/* Decorative background glow */}
@@ -42,10 +42,10 @@ export function BalanceCard({ user, isLoading }: BalanceCardProps) {
               activeOpacity={0.7}
               onPress={() => setShowBalance(!showBalance)}
               style={styles.eyeBtn}>
-              <Ionicons
+              <Icon
                 name={showBalance ? 'eye-outline' : 'eye-off-outline'}
                 size={16}
-                color="#A7F3D0"
+                color={theme.heroMuted}
               />
             </TouchableOpacity>
           </View>
@@ -57,8 +57,8 @@ export function BalanceCard({ user, isLoading }: BalanceCardProps) {
         <TouchableOpacity
           activeOpacity={0.85}
           onPress={() => router.push('/recharge')}
-          style={[styles.rechargeBtn, { backgroundColor: '#10B981' }]}>
-          <Ionicons name="add-circle-outline" size={18} color="#FFFFFF" />
+          style={[styles.rechargeBtn, { backgroundColor: theme.primaryLight }]}>
+          <Icon name="wallet-plus" size={18} color={theme.textInverse} />
           <Text style={styles.rechargeBtnText}>Recharge</Text>
         </TouchableOpacity>
       </View>
@@ -84,7 +84,7 @@ export function BalanceCard({ user, isLoading }: BalanceCardProps) {
 
         <View style={styles.statItem}>
           <Text style={styles.statLabel}>Welfare</Text>
-          <Text style={[styles.statVal, { color: '#FCD34D' }]}>
+          <Text style={[styles.statVal, { color: '#E8B86A' }]}>
             ₹{totalWelfare.toLocaleString()}
           </Text>
         </View>
@@ -122,7 +122,7 @@ const styles = StyleSheet.create({
     gap: 6,
   },
   labelText: {
-    color: '#A7F3D0',
+    color: '#D5EBDF',
     fontSize: 12,
     fontWeight: '600',
     textTransform: 'uppercase',
@@ -167,7 +167,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   statLabel: {
-    color: '#D1FAE5',
+    color: '#D5EBDF',
     fontSize: 11,
     fontWeight: '500',
   },

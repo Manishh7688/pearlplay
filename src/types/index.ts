@@ -1,9 +1,24 @@
+export type PlanFamily = 'land' | 'instrument' | 'dairy';
+
+export type PlanImageKey =
+  | 'land-hydroponics'
+  | 'land-polyhouse'
+  | 'tool-irrigation'
+  | 'tool-tractor'
+  | 'tool-drone'
+  | 'tool-harvester'
+  | 'dairy-milk'
+  | 'dairy-creamery'
+  | 'dairy-estate';
+
 export interface Plan {
   id: string;
   subscription: string;
   title: string;
   subtitle: string;
   category: 'regular' | 'vip';
+  family: PlanFamily;
+  imageKey: PlanImageKey;
   price: number;
   dailyIncome: number;
   time: number; // in days
@@ -25,6 +40,12 @@ export interface UserProfile {
   inviteCode: string;
   hasActivePlan: boolean;
   avatarUrl?: string;
+}
+
+export interface StoredAccount {
+  name: string;
+  phone: string;
+  password: string;
 }
 
 export interface BankDetails {

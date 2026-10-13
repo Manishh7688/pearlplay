@@ -8,7 +8,7 @@ import {
   ScrollView,
   Linking,
 } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
+import { Icon as Ionicons } from '@/components/ui/icon';
 import { useTheme } from '@/hooks/use-theme';
 import { INITIAL_PLATFORM_NOTICE } from '@/services/mock-data';
 import { Button } from './button';

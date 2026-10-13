@@ -8,7 +8,7 @@ import {
   RefreshControl,
 } from 'react-native';
 import { useLocalSearchParams } from 'expo-router';
-import { Ionicons } from '@expo/vector-icons';
+import { Icon as Ionicons } from '@/components/ui/icon';
 import { useTheme } from '@/hooks/use-theme';
 import { useTransactions } from '@/hooks/use-queries';
 import { ScreenHeader } from '@/components/ui/screen-header';
@@ -230,6 +230,9 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
   content: {
+    width: '100%',
+    maxWidth: 680,
+    alignSelf: 'center',
     padding: Spacing.four,
     paddingBottom: Spacing.seven,
   },

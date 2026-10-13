@@ -1,12 +1,12 @@
 import React from 'react';
 import { StyleSheet, View, Text } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
+import { Icon as Ionicons } from '@/components/ui/icon';
 import { useTheme } from '@/hooks/use-theme';
 import { Button } from './button';
 import { Radius, Spacing } from '@/theme';
 
 export interface EmptyViewProps {
-  icon?: keyof typeof Ionicons.glyphMap;
+  icon?: string;
   title: string;
   description?: string;
   actionText?: string;

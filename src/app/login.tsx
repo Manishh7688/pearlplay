@@ -9,7 +9,8 @@ import {
   Platform,
 } from 'react-native';
 import { useRouter } from 'expo-router';
-import { Ionicons } from '@expo/vector-icons';
+import { Image } from 'expo-image';
+import { Icon as Ionicons } from '@/components/ui/icon';
 import { useTheme } from '@/hooks/use-theme';
 import { useLoginMutation } from '@/hooks/use-mutations';
 import { ScreenHeader } from '@/components/ui/screen-header';
@@ -28,7 +29,6 @@ export default function LoginScreen() {
   const [password, setPassword] = useState('123456');
   const [showPassword, setShowPassword] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
-  const [isRegisterMode, setIsRegisterMode] = useState(false);
 
   const handleLogin = () => {
     if (!phone.trim() || phone.length < 10) {
@@ -36,7 +36,7 @@ export default function LoginScreen() {
       return;
     }
     if (!password.trim() || password.length < 6) {
-      setErrorMessage('Password must be at least 6 digits');
+      setErrorMessage('Password must be at least 6 characters');
       return;
     }
 
@@ -65,7 +65,7 @@ export default function LoginScreen() {
       behavior={Platform.OS === 'ios' ? 'padding' : undefined}
       style={[styles.screen, { backgroundColor: theme.background }]}>
       <ScreenHeader
-        title={isRegisterMode ? 'Create Account' : 'Account Login'}
+        title="Account Login"
         showBack
       />
 
@@ -74,9 +74,12 @@ export default function LoginScreen() {
         contentContainerStyle={styles.content}>
         {/* Logo and Brand Title */}
         <View style={styles.brandHero}>
-          <View style={[styles.brandLogoCircle, { backgroundColor: theme.primary }]}>
-            <Ionicons name="leaf" size={32} color="#FFFFFF" />
-          </View>
+          <Image
+            source={require('../../assets/images/icon.png')}
+            style={styles.brandMark}
+            contentFit="cover"
+            accessibilityLabel="Pearl AgriTech"
+          />
           <Text style={[styles.brandTitle, { color: theme.text }]}>
             Pearl <Text style={{ color: theme.primary }}>AgriTech</Text>
           </Text>
@@ -92,7 +95,7 @@ export default function LoginScreen() {
             { backgroundColor: theme.surface, borderColor: theme.cardBorder },
           ]}>
           <Text style={[styles.formHeading, { color: theme.text }]}>
-            {isRegisterMode ? 'Register New Member' : 'Sign In with Mobile'}
+            Sign In with Mobile
           </Text>
 
           <Input
@@ -109,15 +112,14 @@ export default function LoginScreen() {
           />
 
           <Input
-            label="Password (6-digit numeric)"
+            label="Password"
             value={password}
             onChangeText={(txt) => {
               setPassword(txt);
               setErrorMessage('');
             }}
             secureTextEntry={!showPassword}
-            keyboardType="numeric"
-            maxLength={6}
+            maxLength={32}
             leftIcon={<Ionicons name="lock-closed-outline" size={18} color={theme.textSecondary} />}
             rightIcon={
               <TouchableOpacity
@@ -133,22 +135,18 @@ export default function LoginScreen() {
             error={errorMessage}
           />
 
-          {!isRegisterMode ? (
-            <View style={styles.forgotRow}>
-              <TouchableOpacity
-                activeOpacity={0.7}
-                onPress={() =>
-                  showToast({
-                    message: 'Use default demo credentials: 7891192158 / 123456',
-                    type: 'info',
-                  })
-                }>
-                <Text style={[styles.forgotText, { color: theme.primary }]}>
-                  Forgot Password?
-                </Text>
-              </TouchableOpacity>
-            </View>
-          ) : null}
+          <View style={styles.forgotRow}>
+            <TouchableOpacity
+              activeOpacity={0.7}
+              onPress={() =>
+                showToast({
+                  message: 'Use default demo credentials: 7891192158 / 123456',
+                  type: 'info',
+                })
+              }>
+              <Text style={[styles.forgotText, { color: theme.primary }]}>Forgot Password?</Text>
+            </TouchableOpacity>
+          </View>
 
           <Button
             variant="primary"
@@ -157,23 +155,17 @@ export default function LoginScreen() {
             onPress={handleLogin}
             style={{ marginTop: Spacing.two }}
             rightIcon={<Ionicons name="rocket-outline" size={18} color="#FFFFFF" />}>
-            {isRegisterMode ? 'Register & Get ₹10 Bonus' : 'LOG IN'}
+            LOG IN
           </Button>
 
-          {/* Toggle between Login and Register */}
           <View style={styles.switchRow}>
             <Text style={[styles.switchPrompt, { color: theme.textSecondary }]}>
-              {isRegisterMode ? 'Already have an account?' : "Don't have an account?"}
+              Don't have an account?
             </Text>
             <TouchableOpacity
               activeOpacity={0.7}
-              onPress={() => {
-                setIsRegisterMode(!isRegisterMode);
-                setErrorMessage('');
-              }}>
-              <Text style={[styles.switchLink, { color: theme.primary }]}>
-                {isRegisterMode ? 'Log In' : 'Register Now'}
-              </Text>
+              onPress={() => router.push('/register')}>
+              <Text style={[styles.switchLink, { color: theme.primary }]}>Register Now</Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -204,6 +196,9 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   content: {
+    width: '100%',
+    maxWidth: 680,
+    alignSelf: 'center',
     padding: Spacing.four,
     paddingBottom: Spacing.seven,
   },
@@ -211,14 +206,11 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginVertical: Spacing.five,
   },
-  brandLogoCircle: {
-    width: 64,
-    height: 64,
-    borderRadius: Radius.xl,
-    alignItems: 'center',
-    justifyContent: 'center',
+  brandMark: {
+    width: 84,
+    height: 84,
+    borderRadius: 22,
     marginBottom: Spacing.two,
-    ...Shadows.md,
   },
   brandTitle: {
     fontSize: 24,

@@ -1,6 +1,6 @@
 import React from 'react';
-import { StyleSheet, View, Text, TouchableOpacity } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
+import { StyleSheet, View, Text, TouchableOpacity, useWindowDimensions } from 'react-native';
+import { Icon } from '@/components/ui/icon';
 import { useTheme } from '@/hooks/use-theme';
 import { Radius, Spacing } from '@/theme';
 
@@ -18,11 +18,13 @@ export function PlanFilterTabs({
   counts = { all: 9, regular: 6, vip: 3 },
 }: PlanFilterTabsProps) {
   const theme = useTheme();
+  const { width } = useWindowDimensions();
+  const compact = width < 420;
 
-  const tabs: { id: PlanFilterCategory; label: string; count: number; icon: any }[] = [
-    { id: 'all', label: 'All Plans', count: counts.all, icon: 'grid-outline' },
-    { id: 'regular', label: 'Daily Plans', count: counts.regular, icon: 'leaf-outline' },
-    { id: 'vip', label: 'VIP Welfare', count: counts.vip, icon: 'star-outline' },
+  const tabs: { id: PlanFilterCategory; label: string; count: number; icon: string }[] = [
+    { id: 'all', label: compact ? 'All' : 'All Plans', count: counts.all, icon: 'view-dashboard-outline' },
+    { id: 'regular', label: compact ? 'Daily' : 'Daily Plans', count: counts.regular, icon: 'sprout' },
+    { id: 'vip', label: 'VIP', count: counts.vip, icon: 'crown-outline' },
   ];
 
   return (
@@ -49,36 +51,38 @@ export function PlanFilterTabs({
                 backgroundColor: isVip ? theme.vip : theme.primary,
               },
             ]}>
-            <Ionicons
+            <Icon
               name={tab.icon}
-              size={14}
+              size={15}
               color={isSelected ? '#FFFFFF' : theme.textSecondary}
-              style={{ marginRight: 4 }}
             />
             <Text
+              numberOfLines={1}
               style={[
                 styles.tabLabel,
                 { color: isSelected ? '#FFFFFF' : theme.textSecondary },
               ]}>
               {tab.label}
             </Text>
-            <View
-              style={[
-                styles.countBadge,
-                {
-                  backgroundColor: isSelected
-                    ? 'rgba(255, 255, 255, 0.25)'
-                    : theme.backgroundElement,
-                },
-              ]}>
-              <Text
+            {compact ? null : (
+              <View
                 style={[
-                  styles.countText,
-                  { color: isSelected ? '#FFFFFF' : theme.textMuted },
+                  styles.countBadge,
+                  {
+                    backgroundColor: isSelected
+                      ? 'rgba(255, 255, 255, 0.25)'
+                      : theme.backgroundElement,
+                  },
                 ]}>
-                {tab.count}
-              </Text>
-            </View>
+                <Text
+                  style={[
+                    styles.countText,
+                    { color: isSelected ? '#FFFFFF' : theme.textMuted },
+                  ]}>
+                  {tab.count}
+                </Text>
+              </View>
+            )}
           </TouchableOpacity>
         );
       })}
@@ -100,13 +104,16 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
+    gap: 4,
     paddingVertical: 10,
+    paddingHorizontal: 6,
     borderRadius: Radius.md,
   },
   tabLabel: {
-    fontSize: 13,
+    fontSize: 12,
     fontWeight: '700',
     letterSpacing: -0.2,
+    flexShrink: 1,
   },
   countBadge: {
     marginLeft: 6,

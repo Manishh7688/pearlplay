@@ -63,6 +63,7 @@ export function PlanCardSkeleton() {
         styles.cardSkeleton,
         { backgroundColor: theme.surface, borderColor: theme.cardBorder },
       ]}>
+      <Skeleton height={148} borderRadius={Radius.md} style={{ marginBottom: Spacing.three }} />
       <View style={styles.headerRow}>
         <Skeleton width="40%" height={24} />
         <Skeleton width="20%" height={22} borderRadius={Radius.full} />

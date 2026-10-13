@@ -3,6 +3,7 @@ import {
   CheckInStatus,
   Plan,
   RecordType,
+  StoredAccount,
   TeamStats,
   TransactionRecord,
   UserProfile,
@@ -15,6 +16,17 @@ import {
 import { StorageService } from './storage';
 
 const delay = (ms: number = 400) => new Promise((resolve) => setTimeout(resolve, ms));
+
+function normalizePhone(phone: string): string {
+  const digits = phone.replace(/\D/g, '');
+  if (digits.length === 12 && digits.startsWith('91')) return digits.slice(2);
+  if (digits.length === 11 && digits.startsWith('0')) return digits.slice(1);
+  return digits;
+}
+
+function isIndianMobile(phone: string): boolean {
+  return /^[6-9]\d{9}$/.test(phone);
+}
 
 export const ApiService = {
   // Fetch available investment subscriptions
@@ -304,25 +316,49 @@ export const ApiService = {
     return StorageService.getTeamStats();
   },
 
-  // Login authentication
+  // Login authentication. Demo account stays 7891192158 / 123456.
   async login(phone: string, pass: string): Promise<UserProfile> {
     await delay(600);
-    const cleanPhone = phone.trim().replace(/\s+/g, '');
-    if (cleanPhone.length < 10) {
+    const cleanPhone = normalizePhone(phone);
+    if (!isIndianMobile(cleanPhone)) {
       throw new Error('Please enter a valid 10-digit mobile number');
     }
     if (pass.length < 6) {
       throw new Error('Password must be at least 6 characters');
     }
 
-    // Accept user credentials from prompt or any valid mock
-    const user = await StorageService.getUserProfile();
-    const updated = {
-      ...user,
-      phone: cleanPhone,
-    };
-    await StorageService.setUserProfile(updated);
-    return updated;
+    const accounts = await StorageService.getAccounts();
+    const account = accounts.find((item) => item.phone === cleanPhone);
+    if (!account || account.password !== pass) {
+      throw new Error('Incorrect mobile number or password');
+    }
+    return StorageService.switchToAccount(account, 'login');
+  },
+
+  async register(input: { name: string; phone: string; password: string }): Promise<UserProfile> {
+    await delay(600);
+    const name = input.name.trim().replace(/\s+/g, ' ');
+    const phone = normalizePhone(input.phone);
+    const password = input.password;
+
+    if (name.length < 2) {
+      throw new Error('Please enter your name');
+    }
+    if (!isIndianMobile(phone)) {
+      throw new Error('Please enter a valid 10-digit mobile number');
+    }
+    if (password.length < 6) {
+      throw new Error('Password must be at least 6 characters');
+    }
+
+    const accounts = await StorageService.getAccounts();
+    if (accounts.some((item) => item.phone === phone)) {
+      throw new Error('This mobile number is already registered. Please log in.');
+    }
+
+    const account: StoredAccount = { name, phone, password };
+    await StorageService.setAccounts([...accounts, account]);
+    return StorageService.switchToAccount(account, 'register');
   },
 
   // Reset demo data to defaults

@@ -8,7 +8,7 @@ import {
   Platform,
 } from 'react-native';
 import { useRouter } from 'expo-router';
-import { Ionicons } from '@expo/vector-icons';
+import { Icon as Ionicons } from '@/components/ui/icon';
 import { useTheme } from '@/hooks/use-theme';
 import { useBankDetails } from '@/hooks/use-queries';
 import { useSaveBankDetailsMutation } from '@/hooks/use-mutations';
@@ -200,6 +200,9 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   content: {
+    width: '100%',
+    maxWidth: 680,
+    alignSelf: 'center',
     padding: Spacing.four,
     paddingBottom: Spacing.seven,
   },

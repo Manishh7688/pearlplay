@@ -10,7 +10,7 @@ import {
   Platform,
 } from 'react-native';
 import { useRouter } from 'expo-router';
-import { Ionicons } from '@expo/vector-icons';
+import { Icon } from '@/components/ui/icon';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTheme } from '@/hooks/use-theme';
 import { useUserProfile, usePlans } from '@/hooks/use-queries';
@@ -18,13 +18,13 @@ import { BalanceCard } from '@/components/home/balance-card';
 import { QuickActions } from '@/components/home/quick-actions';
 import { LiveTicker } from '@/components/home/live-ticker';
 import { BannerCarousel } from '@/components/home/banner-carousel';
-import { PlanCard } from '@/components/plans/plan-card';
+import { PlanCard, PlanList } from '@/components/plans/plan-card';
 import { AnnouncementModal } from '@/components/ui/announcement-modal';
 import { InvestModal } from '@/components/ui/invest-modal';
 import { PlanCardSkeleton } from '@/components/ui/loading-skeleton';
 import { ErrorView } from '@/components/ui/error-view';
 import { Plan } from '@/types';
-import { Radius, Shadows, Spacing } from '@/theme';
+import { feedColumn, Radius, Shadows, Spacing } from '@/theme';
 
 export default function HomeScreen() {
   const theme = useTheme();
@@ -75,14 +75,15 @@ export default function HomeScreen() {
             borderBottomColor: theme.cardBorder,
           },
         ]}>
+        <View style={styles.topBarInner}>
         <View style={styles.brandRow}>
           <View style={[styles.brandIconCircle, { backgroundColor: theme.primary }]}>
-            <Ionicons name="leaf" size={20} color="#FFFFFF" />
+            <Icon name="sprout" size={20} color={theme.textInverse} />
           </View>
           <View>
             <View style={styles.brandTitleRow}>
               <Text style={[styles.brandTitle, { color: theme.text }]}>Pearl AgriTech</Text>
-              <Ionicons name="checkmark-circle" size={16} color={theme.primary} />
+              <Icon name="check-decagram" size={16} color={theme.primary} />
             </View>
             <Text style={[styles.brandSubtitle, { color: theme.textSecondary }]}>
               Yield & Agro-Finance
@@ -95,23 +96,24 @@ export default function HomeScreen() {
             activeOpacity={0.7}
             onPress={() => router.push('/support')}
             style={[styles.headerIconBtn, { backgroundColor: theme.surfaceSubtle }]}>
-            <Ionicons name="headset-outline" size={19} color={theme.text} />
+            <Icon name="lifebuoy" size={19} color={theme.text} />
           </TouchableOpacity>
 
           <TouchableOpacity
             activeOpacity={0.7}
             onPress={() => setAnnouncementVisible(true)}
             style={[styles.headerIconBtn, { backgroundColor: theme.surfaceSubtle }]}>
-            <Ionicons name="notifications-outline" size={19} color={theme.text} />
+            <Icon name="bell-badge-outline" size={19} color={theme.text} />
             <View style={[styles.unreadDot, { backgroundColor: theme.danger }]} />
           </TouchableOpacity>
+        </View>
         </View>
       </View>
 
       {/* Main Scroll Content */}
       <ScrollView
         showsVerticalScrollIndicator={false}
-        contentContainerStyle={[styles.scrollContent, { paddingBottom: 90 }]}
+        contentContainerStyle={styles.scrollContent}
         refreshControl={
           <RefreshControl
             refreshing={isRefreshing}
@@ -137,7 +139,7 @@ export default function HomeScreen() {
           <View style={styles.section}>
             <View style={styles.sectionHeader}>
               <View style={styles.sectionTitleRow}>
-                <Ionicons name="star" size={18} color={theme.vip} />
+                <Icon name="crown-outline" size={18} color={theme.vip} />
                 <Text style={[styles.sectionTitle, { color: theme.text }]}>
                   Special Plan of the Day
                 </Text>
@@ -161,7 +163,7 @@ export default function HomeScreen() {
         <View style={styles.section}>
           <View style={styles.sectionHeader}>
             <View style={styles.sectionTitleRow}>
-              <Ionicons name="leaf-outline" size={18} color={theme.primary} />
+              <Icon name="sprout" size={18} color={theme.primary} />
               <Text style={[styles.sectionTitle, { color: theme.text }]}>
                 Daily Income Projects
               </Text>
@@ -185,13 +187,10 @@ export default function HomeScreen() {
               onRetry={refetchPlans}
             />
           ) : (
-            regularPreviewPlans.map((plan) => (
-              <PlanCard
-                key={plan.id}
-                plan={plan}
-                onInvest={(p) => setSelectedPlanForInvest(p)}
-              />
-            ))
+            <PlanList
+              plans={regularPreviewPlans}
+              onInvest={(p) => setSelectedPlanForInvest(p)}
+            />
           )}
         </View>
       </ScrollView>
@@ -201,7 +200,7 @@ export default function HomeScreen() {
         activeOpacity={0.85}
         onPress={handleOpenWhatsApp}
         style={[styles.floatingWhatsApp, { backgroundColor: '#25D366' }]}>
-        <Ionicons name="logo-whatsapp" size={28} color="#FFFFFF" />
+        <Icon name="whatsapp" size={28} color={theme.textInverse} />
       </TouchableOpacity>
 
       {/* Announcement Modal Popup */}
@@ -228,11 +227,14 @@ const styles = StyleSheet.create({
   topBar: {
     paddingHorizontal: Spacing.four,
     paddingBottom: Spacing.three,
+    borderBottomWidth: 1,
+    zIndex: 10,
+  },
+  topBarInner: {
+    ...feedColumn,
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    borderBottomWidth: 1,
-    zIndex: 10,
   },
   brandRow: {
     flexDirection: 'row',
@@ -282,7 +284,9 @@ const styles = StyleSheet.create({
     borderRadius: 4,
   },
   scrollContent: {
+    ...feedColumn,
     padding: Spacing.four,
+    paddingBottom: Spacing.six,
   },
   section: {
     marginBottom: Spacing.four,
@@ -309,7 +313,7 @@ const styles = StyleSheet.create({
   },
   floatingWhatsApp: {
     position: 'absolute',
-    bottom: 80,
+    bottom: 18,
     right: 20,
     width: 52,
     height: 52,

@@ -1,6 +1,6 @@
 import React from 'react';
 import { StyleSheet, View, Text, TouchableOpacity } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
+import { Icon } from '@/components/ui/icon';
 import { useRouter } from 'expo-router';
 import { useTheme } from '@/hooks/use-theme';
 import { Radius, Shadows, Spacing } from '@/theme';
@@ -14,8 +14,8 @@ export function BannerCarousel() {
       style={[
         styles.banner,
         {
-          backgroundColor: '#064E3B',
-          borderColor: '#059669',
+          backgroundColor: theme.hero,
+          borderColor: 'transparent',
         },
       ]}>
       {/* Background visual accents */}
@@ -23,31 +23,31 @@ export function BannerCarousel() {
 
       <View style={styles.topBadgeRow}>
         <View style={styles.tag}>
-          <Ionicons name="sparkles" size={12} color="#FCD34D" />
+          <Icon name="sprout" size={12} color="#E8B86A" />
           <Text style={styles.tagText}>OFFICIAL AGRI-TECH PLATFORM</Text>
         </View>
         <Text style={styles.versionText}>July 2026 Release</Text>
       </View>
 
       <Text style={styles.bannerHeading}>
-        Pearl Smart Agro-Yield <Text style={{ color: '#34D399' }}>Infrastructure</Text>
+        Pearl Smart Agro-Yield <Text style={{ color: '#7DCEA0' }}>Infrastructure</Text>
       </Text>
 
       <Text style={styles.bannerSubtext}>
-        Invest in automated farming equipment, drones, and high-yield greenhouses with daily direct returns.
+        Invest in farmland, cropping tools, and dairy with daily returns paid to your wallet.
       </Text>
 
       <View style={styles.footerRow}>
         <View style={styles.featureItem}>
-          <Ionicons name="checkmark-circle" size={14} color="#34D399" />
+          <Icon name="check-decagram" size={14} color="#7DCEA0" />
           <Text style={styles.featureText}>Daily Income</Text>
         </View>
         <View style={styles.featureItem}>
-          <Ionicons name="checkmark-circle" size={14} color="#34D399" />
-          <Text style={styles.featureText}>Unlimited Withdrawals</Text>
+          <Icon name="check-decagram" size={14} color="#7DCEA0" />
+          <Text style={styles.featureText}>Easy Withdrawals</Text>
         </View>
         <View style={styles.featureItem}>
-          <Ionicons name="checkmark-circle" size={14} color="#34D399" />
+          <Icon name="check-decagram" size={14} color="#7DCEA0" />
           <Text style={styles.featureText}>15% Level Rebate</Text>
         </View>
       </View>
@@ -72,7 +72,7 @@ const styles = StyleSheet.create({
     width: 120,
     height: 120,
     borderRadius: 60,
-    backgroundColor: '#10B981',
+    backgroundColor: '#3DAB74',
     opacity: 0.15,
   },
   topBadgeRow: {
@@ -91,13 +91,13 @@ const styles = StyleSheet.create({
     borderRadius: Radius.full,
   },
   tagText: {
-    color: '#FCD34D',
+    color: '#E8B86A',
     fontSize: 10,
     fontWeight: '800',
     letterSpacing: 0.5,
   },
   versionText: {
-    color: '#A7F3D0',
+    color: '#D5EBDF',
     fontSize: 11,
     fontWeight: '500',
   },
@@ -110,7 +110,7 @@ const styles = StyleSheet.create({
     marginBottom: 6,
   },
   bannerSubtext: {
-    color: '#D1FAE5',
+    color: '#D5EBDF',
     fontSize: 12,
     lineHeight: 17,
     marginBottom: Spacing.three,

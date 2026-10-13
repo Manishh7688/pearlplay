@@ -9,7 +9,8 @@ import {
 import { useTheme } from '@/hooks/use-theme';
 import { usePlans, useUserProfile } from '@/hooks/use-queries';
 import { ScreenHeader } from '@/components/ui/screen-header';
-import { PlanCard } from '@/components/plans/plan-card';
+import { PlanList } from '@/components/plans/plan-card';
+import { Icon } from '@/components/ui/icon';
 import {
   PlanFilterCategory,
   PlanFilterTabs,
@@ -18,7 +19,7 @@ import { InvestModal } from '@/components/ui/invest-modal';
 import { PlanCardSkeleton } from '@/components/ui/loading-skeleton';
 import { ErrorView } from '@/components/ui/error-view';
 import { Plan } from '@/types';
-import { Spacing } from '@/theme';
+import { feedColumn, Spacing } from '@/theme';
 
 export default function ProductsScreen() {
   const theme = useTheme();
@@ -43,7 +44,7 @@ export default function ProductsScreen() {
 
       <ScrollView
         showsVerticalScrollIndicator={false}
-        contentContainerStyle={[styles.content, { paddingBottom: 90 }]}
+        contentContainerStyle={styles.content}
         refreshControl={
           <RefreshControl
             refreshing={isRefetching}
@@ -64,8 +65,9 @@ export default function ProductsScreen() {
               borderColor: theme.primaryBorder,
             },
           ]}>
+          <Icon name="information" size={18} color={theme.primary} />
           <Text style={[styles.infoText, { color: theme.primaryDark }]}>
-            💡 All plans generate daily income credited every 24 hours. Withdrawals are unlimited starting from ₹150 with 0% fee.
+            Land, crop tools, and dairy plans pay income every 24 hours. Withdraw from ₹150 with no fee.
           </Text>
         </View>
 
@@ -83,13 +85,7 @@ export default function ProductsScreen() {
             onRetry={() => refetch()}
           />
         ) : (
-          plans?.map((plan) => (
-            <PlanCard
-              key={plan.id}
-              plan={plan}
-              onInvest={(p) => setSelectedPlan(p)}
-            />
-          ))
+          <PlanList plans={plans ?? []} onInvest={(p) => setSelectedPlan(p)} />
         )}
       </ScrollView>
 
@@ -109,17 +105,23 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   content: {
+    ...feedColumn,
     padding: Spacing.four,
+    paddingBottom: Spacing.six,
   },
   infoBox: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: Spacing.two,
     padding: Spacing.three,
-    borderRadius: 12,
+    borderRadius: 14,
     borderWidth: 1,
     marginBottom: Spacing.four,
   },
   infoText: {
-    fontSize: 12,
+    flex: 1,
+    fontSize: 13,
     fontWeight: '600',
-    lineHeight: 18,
+    lineHeight: 19,
   },
 });

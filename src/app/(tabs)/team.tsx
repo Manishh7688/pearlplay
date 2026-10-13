@@ -8,14 +8,14 @@ import {
   RefreshControl,
   Share,
 } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
+import { Icon as Ionicons } from '@/components/ui/icon';
 import { useTheme } from '@/hooks/use-theme';
 import { useTeamStats } from '@/hooks/use-queries';
 import { ScreenHeader } from '@/components/ui/screen-header';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/components/ui/toast';
-import { Radius, Shadows, Spacing } from '@/theme';
+import { feedColumn, Radius, Shadows, Spacing } from '@/theme';
 
 export default function TeamScreen() {
   const theme = useTheme();
@@ -58,7 +58,7 @@ export default function TeamScreen() {
 
       <ScrollView
         showsVerticalScrollIndicator={false}
-        contentContainerStyle={[styles.content, { paddingBottom: 90 }]}
+        contentContainerStyle={styles.content}
         refreshControl={
           <RefreshControl
             refreshing={isRefetching}
@@ -266,7 +266,9 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   content: {
+    ...feedColumn,
     padding: Spacing.four,
+    paddingBottom: Spacing.six,
   },
   summaryCard: {
     borderRadius: Radius.xl,

@@ -1,11 +1,13 @@
 import React from 'react';
-import { StyleSheet, View, Text } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
+import { StyleSheet, View, Text, useWindowDimensions } from 'react-native';
+import { Image } from 'expo-image';
 import { Plan } from '@/types';
 import { useTheme } from '@/hooks/use-theme';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Radius, Shadows, Spacing } from '@/theme';
+import { Icon } from '@/components/ui/icon';
+import { FAMILY_LABEL, PLAN_IMAGES } from '@/components/plans/plan-images';
+import { Layout, Radius, Shadows, Spacing } from '@/theme';
 
 interface PlanCardProps {
   plan: Plan;
@@ -13,9 +15,16 @@ interface PlanCardProps {
   featured?: boolean;
 }
 
+const FAMILY_COLOR = {
+  land: 'primary',
+  instrument: 'accent',
+  dairy: 'vip',
+} as const;
+
 export function PlanCard({ plan, onInvest, featured = false }: PlanCardProps) {
   const theme = useTheme();
   const isVip = plan.category === 'vip';
+  const tone = theme[FAMILY_COLOR[plan.family]];
 
   return (
     <View
@@ -28,107 +37,134 @@ export function PlanCard({ plan, onInvest, featured = false }: PlanCardProps) {
         },
         featured && Shadows.md,
       ]}>
-      {/* Top Header */}
-      <View style={styles.header}>
-        <View style={styles.titleArea}>
-          <View style={styles.badgeRow}>
-            <Badge variant={isVip ? 'vip' : 'primary'} size="sm">
-              {plan.subscription}
-            </Badge>
-            {plan.isPopular ? (
-              <Badge variant="warning" size="sm">
-                Most Popular
+      <View style={styles.heroWrap}>
+        <Image
+          source={PLAN_IMAGES[plan.imageKey]}
+          style={styles.hero}
+          contentFit="cover"
+          transition={200}
+        />
+        <View style={[styles.familyChip, { backgroundColor: 'rgba(255,252,248,0.94)' }]}>
+          <View style={[styles.familyDot, { backgroundColor: tone }]} />
+          <Text style={[styles.familyText, { color: theme.text }]}>{FAMILY_LABEL[plan.family]}</Text>
+        </View>
+      </View>
+
+      <View style={styles.body}>
+        <View style={styles.header}>
+          <View style={styles.titleArea}>
+            <View style={styles.badgeRow}>
+              <Badge variant={isVip ? 'vip' : 'primary'} size="sm">
+                {plan.subscription}
               </Badge>
-            ) : null}
-            {plan.badge && !plan.isPopular ? (
-              <Badge variant="neutral" size="sm">
-                {plan.badge}
-              </Badge>
-            ) : null}
+              {plan.isPopular ? (
+                <Badge variant="warning" size="sm">
+                  Most Popular
+                </Badge>
+              ) : null}
+              {plan.badge && !plan.isPopular ? (
+                <Badge variant="neutral" size="sm">
+                  {plan.badge}
+                </Badge>
+              ) : null}
+            </View>
+            <Text style={[styles.planTitle, { color: theme.text }]}>{plan.title}</Text>
+            <Text style={[styles.planSubtitle, { color: theme.textSecondary }]} numberOfLines={2}>
+              {plan.subtitle}
+            </Text>
           </View>
-          <Text style={[styles.planTitle, { color: theme.text }]}>{plan.title}</Text>
-          <Text style={[styles.planSubtitle, { color: theme.textSecondary }]} numberOfLines={1}>
-            {plan.subtitle}
-          </Text>
+
+          <View
+            style={[
+              styles.daysChip,
+              {
+                backgroundColor: isVip ? theme.vipLight : theme.primarySurface,
+                borderColor: isVip ? theme.vipBorder : theme.primaryBorder,
+              },
+            ]}>
+            <Icon name="time-outline" size={13} color={isVip ? theme.vipDark : theme.primary} />
+            <Text style={[styles.daysText, { color: isVip ? theme.vipDark : theme.primary }]}>
+              {plan.time}d
+            </Text>
+          </View>
         </View>
 
         <View
           style={[
-            styles.daysChip,
+            styles.matrix,
             {
-              backgroundColor: isVip ? theme.vipLight : theme.primarySurface,
-              borderColor: isVip ? theme.vipBorder : theme.primaryBorder,
+              backgroundColor: theme.surfaceSubtle,
+              borderColor: theme.borderSubtle,
             },
           ]}>
-          <Ionicons
-            name="time-outline"
-            size={13}
-            color={isVip ? theme.vipDark : theme.primary}
+          <View style={styles.matrixCol}>
+            <Text style={[styles.matrixLabel, { color: theme.textSecondary }]}>Daily</Text>
+            <Text style={[styles.matrixVal, { color: theme.primary }]}>
+              ₹{plan.dailyIncome.toLocaleString()}
+            </Text>
+          </View>
+
+          <View style={[styles.matrixDivider, { backgroundColor: theme.borderSubtle }]} />
+
+          <View style={styles.matrixCol}>
+            <Text style={[styles.matrixLabel, { color: theme.textSecondary }]}>Total</Text>
+            <Text style={[styles.matrixVal, { color: isVip ? theme.vip : theme.text }]}>
+              ₹{plan.totalIncome.toLocaleString()}
+            </Text>
+          </View>
+
+          <View style={[styles.matrixDivider, { backgroundColor: theme.borderSubtle }]} />
+
+          <View style={styles.matrixCol}>
+            <Text style={[styles.matrixLabel, { color: theme.textSecondary }]}>Return</Text>
+            <Text style={[styles.roiText, { color: theme.success }]}>+{plan.roiPercentage}%</Text>
+          </View>
+        </View>
+
+        <View style={styles.footer}>
+          <View>
+            <Text style={[styles.pricePrefix, { color: theme.textSecondary }]}>Price</Text>
+            <Text style={[styles.priceValue, { color: theme.text }]}>₹{plan.price.toLocaleString()}</Text>
+          </View>
+
+          <View style={styles.buttonWrapper}>
+            <Button
+              variant={isVip ? 'vip' : 'primary'}
+              size="md"
+              onPress={() => onInvest(plan)}
+              rightIcon={<Icon name="arrow-forward" size={16} color={theme.textInverse} />}>
+              Invest Now
+            </Button>
+          </View>
+        </View>
+      </View>
+    </View>
+  );
+}
+
+export function PlanList({
+  plans,
+  onInvest,
+  featuredId,
+}: {
+  plans: Plan[];
+  onInvest: (plan: Plan) => void;
+  featuredId?: string;
+}) {
+  const { width } = useWindowDimensions();
+  const two = width >= Layout.grid;
+
+  return (
+    <View style={[styles.list, two && styles.listGrid]}>
+      {plans.map((plan) => (
+        <View key={plan.id} style={two ? styles.listItem : undefined}>
+          <PlanCard
+            plan={plan}
+            featured={plan.id === featuredId}
+            onInvest={onInvest}
           />
-          <Text
-            style={[
-              styles.daysText,
-              { color: isVip ? theme.vipDark : theme.primary },
-            ]}>
-            {plan.time} Days
-          </Text>
         </View>
-      </View>
-
-      {/* Financial Details Matrix */}
-      <View
-        style={[
-          styles.matrix,
-          {
-            backgroundColor: theme.surfaceSubtle,
-            borderColor: theme.borderSubtle,
-          },
-        ]}>
-        <View style={styles.matrixCol}>
-          <Text style={[styles.matrixLabel, { color: theme.textSecondary }]}>Daily Profit</Text>
-          <Text style={[styles.matrixVal, { color: theme.primary }]}>
-            ₹{plan.dailyIncome.toLocaleString()}
-          </Text>
-        </View>
-
-        <View style={[styles.matrixDivider, { backgroundColor: theme.borderSubtle }]} />
-
-        <View style={styles.matrixCol}>
-          <Text style={[styles.matrixLabel, { color: theme.textSecondary }]}>Total Income</Text>
-          <Text style={[styles.matrixVal, { color: isVip ? theme.vip : theme.text }]}>
-            ₹{plan.totalIncome.toLocaleString()}
-          </Text>
-        </View>
-
-        <View style={[styles.matrixDivider, { backgroundColor: theme.borderSubtle }]} />
-
-        <View style={styles.matrixCol}>
-          <Text style={[styles.matrixLabel, { color: theme.textSecondary }]}>Net Return</Text>
-          <Text style={[styles.roiText, { color: theme.success }]}>
-            +{plan.roiPercentage}%
-          </Text>
-        </View>
-      </View>
-
-      {/* Footer: Price tag & Invest button */}
-      <View style={styles.footer}>
-        <View>
-          <Text style={[styles.pricePrefix, { color: theme.textSecondary }]}>Price</Text>
-          <Text style={[styles.priceValue, { color: theme.text }]}>
-            ₹{plan.price.toLocaleString()}
-          </Text>
-        </View>
-
-        <View style={styles.buttonWrapper}>
-          <Button
-            variant={isVip ? 'vip' : 'primary'}
-            size="md"
-            onPress={() => onInvest(plan)}
-            rightIcon={<Ionicons name="arrow-forward" size={16} color="#FFFFFF" />}>
-            Invest Now
-          </Button>
-        </View>
-      </View>
+      ))}
     </View>
   );
 }
@@ -136,9 +172,41 @@ export function PlanCard({ plan, onInvest, featured = false }: PlanCardProps) {
 const styles = StyleSheet.create({
   card: {
     borderRadius: Radius.lg,
-    padding: Spacing.four,
     marginBottom: Spacing.three,
+    overflow: 'hidden',
     ...Shadows.sm,
+  },
+  heroWrap: {
+    height: 168,
+    backgroundColor: '#E7E1D6',
+  },
+  hero: {
+    width: '100%',
+    height: '100%',
+  },
+  familyChip: {
+    position: 'absolute',
+    left: 12,
+    top: 12,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    paddingVertical: 5,
+    paddingHorizontal: 10,
+    borderRadius: Radius.full,
+  },
+  familyDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+  },
+  familyText: {
+    fontSize: 12,
+    fontWeight: '800',
+    letterSpacing: -0.1,
+  },
+  body: {
+    padding: Spacing.four,
   },
   header: {
     flexDirection: 'row',
@@ -153,6 +221,7 @@ const styles = StyleSheet.create({
   badgeRow: {
     flexDirection: 'row',
     alignItems: 'center',
+    flexWrap: 'wrap',
     gap: Spacing.one + 2,
     marginBottom: 6,
   },
@@ -165,6 +234,7 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: '500',
     marginTop: 2,
+    lineHeight: 17,
   },
   daysChip: {
     flexDirection: 'row',
@@ -183,7 +253,8 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    padding: Spacing.three,
+    paddingVertical: Spacing.three,
+    paddingHorizontal: Spacing.two,
     borderRadius: Radius.md,
     borderWidth: 1,
     marginBottom: Spacing.three,
@@ -198,7 +269,7 @@ const styles = StyleSheet.create({
     textTransform: 'uppercase',
   },
   matrixVal: {
-    fontSize: 15,
+    fontSize: 14,
     fontWeight: '800',
     marginTop: 3,
   },
@@ -215,6 +286,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
+    gap: Spacing.three,
   },
   pricePrefix: {
     fontSize: 11,
@@ -227,6 +299,19 @@ const styles = StyleSheet.create({
     letterSpacing: -0.4,
   },
   buttonWrapper: {
-    width: 140,
+    flex: 1,
+    maxWidth: 160,
+  },
+  list: {
+    width: '100%',
+  },
+  listGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    marginHorizontal: -8,
+  },
+  listItem: {
+    width: '50%',
+    paddingHorizontal: 8,
   },
 });

@@ -7,7 +7,7 @@ import {
   TouchableOpacity,
 } from 'react-native';
 import { useRouter } from 'expo-router';
-import { Ionicons } from '@expo/vector-icons';
+import { Icon as Ionicons } from '@/components/ui/icon';
 import { Plan, UserProfile } from '@/types';
 import { useTheme } from '@/hooks/use-theme';
 import { useInvestMutation } from '@/hooks/use-mutations';

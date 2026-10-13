@@ -84,7 +84,19 @@ export function useLoginMutation() {
     mutationFn: ({ phone, pass }: { phone: string; pass: string }) =>
       ApiService.login(phone, pass),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.USER_PROFILE });
+      queryClient.invalidateQueries();
+    },
+  });
+}
+
+export function useRegisterMutation() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (input: { name: string; phone: string; password: string }) =>
+      ApiService.register(input),
+    onSuccess: () => {
+      queryClient.invalidateQueries();
     },
   });
 }

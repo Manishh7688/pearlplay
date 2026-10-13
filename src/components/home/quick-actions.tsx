@@ -1,8 +1,8 @@
 import React from 'react';
 import { StyleSheet, View, Text, TouchableOpacity } from 'react-native';
 import { useRouter } from 'expo-router';
-import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '@/hooks/use-theme';
+import { Icon } from '@/components/ui/icon';
 import { Radius, Shadows, Spacing } from '@/theme';
 
 export function QuickActions() {
@@ -12,34 +12,34 @@ export function QuickActions() {
   const actions = [
     {
       id: 'checkin',
-      title: 'Daily CheckIn',
-      icon: 'calendar' as const,
-      color: '#059669',
-      bgColor: '#ECFDF5',
+      title: 'Check-in',
+      icon: 'calendar-check',
+      color: theme.primary,
+      bgColor: theme.primarySurface,
       route: '/checkin' as const,
     },
     {
       id: 'invite',
-      title: 'Invite Friends',
-      icon: 'gift' as const,
-      color: '#D97706',
-      bgColor: '#FEF3C7',
+      title: 'Invite',
+      icon: 'account-multiple-plus',
+      color: theme.vipDark,
+      bgColor: theme.vipLight,
       route: '/team' as const,
     },
     {
       id: 'recharge',
-      title: 'Recharge',
-      icon: 'wallet' as const,
-      color: '#2563EB',
-      bgColor: '#EFF6FF',
+      title: 'Add money',
+      icon: 'wallet-plus',
+      color: theme.accent,
+      bgColor: theme.accentLight,
       route: '/recharge' as const,
     },
     {
       id: 'withdraw',
       title: 'Withdraw',
-      icon: 'shield-checkmark' as const,
-      color: '#10B981',
-      bgColor: '#E6FFFA',
+      icon: 'bank-transfer-out',
+      color: theme.primary,
+      bgColor: theme.backgroundElement,
       route: '/withdraw' as const,
     },
   ];
@@ -59,7 +59,7 @@ export function QuickActions() {
             },
           ]}>
           <View style={[styles.iconCircle, { backgroundColor: act.bgColor }]}>
-            <Ionicons name={act.icon} size={22} color={act.color} />
+            <Icon name={act.icon} size={22} color={act.color} />
           </View>
           <Text style={[styles.actionTitle, { color: theme.text }]}>{act.title}</Text>
         </TouchableOpacity>
@@ -97,5 +97,6 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     textAlign: 'center',
     letterSpacing: -0.2,
+    lineHeight: 16,
   },
 });

@@ -7,16 +7,17 @@ import {
   TouchableOpacity,
   RefreshControl,
   Alert,
+  Platform,
 } from 'react-native';
 import { useRouter } from 'expo-router';
-import { Ionicons } from '@expo/vector-icons';
+import { Icon as Ionicons } from '@/components/ui/icon';
 import { useTheme } from '@/hooks/use-theme';
 import { useUserProfile } from '@/hooks/use-queries';
 import { useResetDemoMutation } from '@/hooks/use-mutations';
 import { ScreenHeader } from '@/components/ui/screen-header';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/components/ui/toast';
-import { Radius, Shadows, Spacing } from '@/theme';
+import { feedColumn, Radius, Shadows, Spacing } from '@/theme';
 
 interface ProfileMenuItem {
   id: string;
@@ -41,11 +42,20 @@ export default function ProfileScreen() {
   const resetDemo = useResetDemoMutation();
 
   const handleAppDownload = () => {
-    Alert.alert(
-      'Pearl Mobile App APK',
-      'You are already running the latest Pearl App mobile release (v1.0.0 Stable). Automatic OTA updates are active.',
-      [{ text: 'OK' }]
-    );
+    if (Platform.OS === 'web') {
+      const anchor = document.createElement('a');
+      anchor.href = '/PearlAgriTech.apk';
+      anchor.download = 'PearlAgriTech.apk';
+      document.body.appendChild(anchor);
+      anchor.click();
+      anchor.remove();
+      showToast({ message: 'Downloading PearlAgriTech.apk', type: 'success' });
+      return;
+    }
+    showToast({
+      message: 'Open Pearl AgriTech in a browser, then use Account → Installation to download the APK.',
+      type: 'info',
+    });
   };
 
   const handleLogout = () => {
@@ -81,7 +91,7 @@ export default function ProfileScreen() {
           id: 'bank',
           title: 'Bank Account Binding',
           subtitle: 'Required for bank withdrawals',
-          icon: 'card-outline',
+          icon: 'bank-outline',
           color: theme.primary,
           route: '/bank-details',
         },
@@ -89,7 +99,7 @@ export default function ProfileScreen() {
           id: 'income',
           title: 'Income & Investment Orders',
           subtitle: 'Track active plans & daily yields',
-          icon: 'trending-up-outline',
+          icon: 'chart-timeline-variant',
           color: '#10B981',
           route: '/records',
         },
@@ -97,7 +107,7 @@ export default function ProfileScreen() {
           id: 'withdraw-records',
           title: 'Withdrawal History',
           subtitle: 'View status of your withdrawals',
-          icon: 'receipt-outline',
+          icon: 'receipt-text',
           color: '#2563EB',
           route: '/records',
         },
@@ -105,7 +115,7 @@ export default function ProfileScreen() {
           id: 'redeem',
           title: 'Daily Rewards & Gift Voucher',
           subtitle: 'Claim attendance and promo codes',
-          icon: 'gift-outline',
+          icon: 'ticket-percent',
           color: '#D97706',
           route: '/checkin',
         },
@@ -118,7 +128,7 @@ export default function ProfileScreen() {
           id: 'about',
           title: 'About Pearl AgriTech',
           subtitle: 'Smart agriculture infrastructure',
-          icon: 'leaf-outline',
+          icon: 'barn',
           color: theme.primary,
           route: '/about',
         },
@@ -126,15 +136,15 @@ export default function ProfileScreen() {
           id: 'support',
           title: 'Customer Care & Official Telegram',
           subtitle: '24/7 Telegram & WhatsApp support',
-          icon: 'chatbubbles-outline',
+          icon: 'message-badge',
           color: '#0284C7',
           route: '/support',
         },
         {
           id: 'download',
-          title: 'Pearl App Installation',
-          subtitle: 'Version 1.0.0 (Production Build)',
-          icon: 'download-outline',
+          title: 'Pearl AgriTech Installation',
+          subtitle: 'Download PearlAgriTech.apk',
+          icon: 'cellphone-arrow-down',
           color: theme.textSecondary,
           action: handleAppDownload,
         },
@@ -145,7 +155,7 @@ export default function ProfileScreen() {
   return (
     <View style={[styles.screen, { backgroundColor: theme.background }]}>
       <ScreenHeader
-        title="Mine"
+        title="Account"
         subtitle="Account & Portfolio Overview"
         rightAction={
           <TouchableOpacity
@@ -159,7 +169,7 @@ export default function ProfileScreen() {
 
       <ScrollView
         showsVerticalScrollIndicator={false}
-        contentContainerStyle={[styles.content, { paddingBottom: 100 }]}
+        contentContainerStyle={styles.content}
         refreshControl={
           <RefreshControl
             refreshing={isRefetching}
@@ -346,7 +356,9 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   content: {
+    ...feedColumn,
     padding: Spacing.four,
+    paddingBottom: Spacing.six,
   },
   userCard: {
     borderRadius: Radius.xl,

@@ -3,82 +3,90 @@ import { Platform } from 'react-native';
 
 export const Colors = {
   light: {
-    primary: '#059669',
-    primaryDark: '#064E3B',
-    primaryLight: '#10B981',
-    primarySurface: '#ECFDF5',
-    primaryBorder: '#A7F3D0',
+    primary: '#1B7A4E',
+    primaryDark: '#0E3D28',
+    primaryLight: '#3DAB74',
+    primarySurface: '#E7F6EE',
+    primaryBorder: '#B7E4C9',
 
-    vip: '#D97706',
-    vipLight: '#FEF3C7',
-    vipDark: '#78350F',
-    vipBorder: '#FDE68A',
+    vip: '#C4812A',
+    vipLight: '#FFF4E0',
+    vipDark: '#7A4E10',
+    vipBorder: '#F3D7A1',
 
-    accent: '#2563EB',
-    accentLight: '#EFF6FF',
+    accent: '#3D6B8C',
+    accentLight: '#E7F1F6',
 
-    background: '#F4F7F5',
-    backgroundElement: '#E7EFEA',
-    backgroundSelected: '#D1FAE5',
+    background: '#F4F1EA',
+    backgroundElement: '#E7E1D6',
+    backgroundSelected: '#DCEFE4',
 
-    surface: '#FFFFFF',
+    surface: '#FFFCF8',
     surfaceElevated: '#FFFFFF',
-    surfaceSubtle: '#F8FAF9',
+    surfaceSubtle: '#F7F4EE',
 
-    border: '#E2E8F0',
-    borderSubtle: '#F1F5F9',
-    cardBorder: '#E5ECE8',
+    border: '#E4DDD0',
+    borderSubtle: '#EFEAE1',
+    cardBorder: '#E7E0D4',
 
-    text: '#0F172A',
-    textSecondary: '#475569',
-    textMuted: '#94A3B8',
+    text: '#1C241F',
+    textSecondary: '#5C675F',
+    textMuted: '#8B938C',
     textInverse: '#FFFFFF',
 
-    success: '#10B981',
-    successLight: '#D1FAE5',
-    warning: '#F59E0B',
+    hero: '#12392A',
+    heroMuted: '#D5EBDF',
+    heroAccent: '#E8B86A',
+
+    success: '#1F9D68',
+    successLight: '#DDF6EA',
+    warning: '#D97706',
     warningLight: '#FEF3C7',
-    danger: '#EF4444',
-    dangerLight: '#FEE2E2',
+    danger: '#DC4C4C',
+    dangerLight: '#FDECEC',
   },
   dark: {
-    primary: '#10B981',
-    primaryDark: '#059669',
-    primaryLight: '#34D399',
-    primarySurface: '#062E1F',
-    primaryBorder: '#0F5132',
+    primary: '#3DAB74',
+    primaryDark: '#166B45',
+    primaryLight: '#6FCB9A',
+    primarySurface: '#143226',
+    primaryBorder: '#1E5340',
 
-    vip: '#F59E0B',
-    vipLight: '#78350F',
-    vipDark: '#B45309',
-    vipBorder: '#92400E',
+    vip: '#E8B86A',
+    vipLight: '#3A2C14',
+    vipDark: '#F3D7A1',
+    vipBorder: '#6A4E22',
 
-    accent: '#3B82F6',
-    accentLight: '#1E3A8A',
+    accent: '#7BA7C4',
+    accentLight: '#1A2C38',
 
-    background: '#08140E',
-    backgroundElement: '#10231A',
-    backgroundSelected: '#18382A',
+    background: '#101612',
+    backgroundElement: '#1C2822',
+    backgroundSelected: '#1E3A2C',
 
-    surface: '#0F261C',
-    surfaceElevated: '#173628',
-    surfaceSubtle: '#0B1C14',
+    surface: '#18211C',
+    surfaceElevated: '#212C26',
+    surfaceSubtle: '#141C18',
 
-    border: '#1F3F2E',
-    borderSubtle: '#142E21',
-    cardBorder: '#234734',
+    border: '#2A3A32',
+    borderSubtle: '#1E2B25',
+    cardBorder: '#31443A',
 
-    text: '#F8FAFC',
-    textSecondary: '#94A3B8',
-    textMuted: '#64748B',
-    textInverse: '#0F172A',
+    text: '#F6F3EC',
+    textSecondary: '#C5CDC6',
+    textMuted: '#8E9A92',
+    textInverse: '#102018',
 
-    success: '#34D399',
-    successLight: '#064E3B',
+    hero: '#0E2A1E',
+    heroMuted: '#D5EBDF',
+    heroAccent: '#E8B86A',
+
+    success: '#4ADE80',
+    successLight: '#143226',
     warning: '#FBBF24',
-    warningLight: '#78350F',
+    warningLight: '#3A2C14',
     danger: '#F87171',
-    dangerLight: '#7F1D1D',
+    dangerLight: '#3F1D1D',
   },
 } as const;
 
@@ -158,9 +166,9 @@ export const Shadows = {
     },
   }),
   glow: Platform.select({
-    web: { boxShadow: '0 0 20px rgba(16, 185, 129, 0.25)' },
+    web: { boxShadow: '0 0 20px rgba(27, 122, 78, 0.22)' },
     default: {
-      shadowColor: '#10B981',
+      shadowColor: '#1B7A4E',
       shadowOffset: { width: 0, height: 4 },
       shadowOpacity: 0.25,
       shadowRadius: 12,
@@ -169,5 +177,25 @@ export const Shadows = {
   }),
 };
 
-export const BottomTabInset = Platform.select({ ios: 60, android: 70 }) ?? 60;
+export const BottomTabInset = Platform.select({ ios: 56, android: 64, web: 72 }) ?? 64;
 export const MaxContentWidth = 720;
+
+/** Wide web layout switches the bottom bar into a left sidebar. */
+export const Layout = {
+  desktop: 960,
+  grid: 1080,
+  feedMax: 1080,
+  formMax: 680,
+} as const;
+
+export const feedColumn = {
+  width: '100%' as const,
+  maxWidth: Layout.feedMax,
+  alignSelf: 'center' as const,
+};
+
+export const formColumn = {
+  width: '100%' as const,
+  maxWidth: Layout.formMax,
+  alignSelf: 'center' as const,
+};
