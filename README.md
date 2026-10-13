@@ -1,6 +1,6 @@
-# Welcome to your Expo app 👋
+# Pearl App
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+Expo app for iOS, Android, and web. Created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
 
 ## Get started
 
@@ -23,7 +23,23 @@ In the output, you'll find options to open the app in a
 - [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
 - [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
 
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
+Routes live in `src/app`. Screen UI lives in `src/features`. Shared components, theme, and hooks live beside them. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
+
+```
+src/
+  app/                  routes only
+  components/
+    navigation/         tab shell
+    ui/                 shared components
+  features/
+    home/
+    explore/
+  hooks/
+  theme/
+assets/
+  icons/
+  images/
+```
 
 ## Get a fresh project
 
