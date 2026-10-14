@@ -1,9 +1,12 @@
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,400;0,500;0,600;0,700;0,800;0,900;1,400;1,600&family=Inter:wght@400;500;600;700;800&family=Outfit:wght@500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700&display=swap');
+
 html,
 body,
 #root {
   background: #f4f7f6;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -15,12 +18,39 @@ body,
 }
 
 :root {
-  --font-display:
-    'Plus Jakarta Sans', 'Inter', 'Spline Sans', ui-sans-serif, system-ui, -apple-system,
-    BlinkMacSystemFont, sans-serif, Apple Color Emoji, Segoe UI Emoji, Segoe UI Symbol,
-    Noto Color Emoji;
-  --font-mono:
-    ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, Liberation Mono, Courier New, monospace;
-  --font-rounded: 'SF Pro Rounded', 'Hiragino Maru Gothic ProN', Meiryo, 'MS PGothic', sans-serif;
+  --font-display: 'Plus Jakarta Sans', 'Inter', -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  --font-heading: 'Plus Jakarta Sans', 'Outfit', -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-body: 'Plus Jakarta Sans', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  --font-rounded: 'Plus Jakarta Sans', 'SF Pro Rounded', system-ui, sans-serif;
   --font-serif: Georgia, 'Times New Roman', serif;
+}
+
+/* Global Font Family Rule for all Web & React Native Web Elements */
+html,
+body,
+#root,
+div,
+span,
+p,
+a,
+input,
+button,
+textarea,
+select,
+[dir],
+[class*="css-text"],
+[class*="r-"] {
+  font-family: var(--font-display) !important;
+}
+
+/* Tabular Numbers for Currency and Metrics */
+.tabular-nums,
+[class*="price"],
+[class*="balance"],
+[class*="matrixVal"],
+[class*="amount"] {
+  font-variant-numeric: tabular-nums;
+  -webkit-font-feature-settings: 'tnum' 1, 'cv02' 1, 'cv03' 1, 'cv04' 1, 'cv11' 1;
+  font-feature-settings: 'tnum' 1, 'cv02' 1, 'cv03' 1, 'cv04' 1, 'cv11' 1;
 }

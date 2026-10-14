@@ -97,24 +97,42 @@ export type ThemeColor = keyof typeof Colors.light;
 
 export const Fonts = Platform.select({
   ios: {
+    display: 'System',
+    heading: 'System',
+    body: 'System',
     sans: 'system-ui',
     serif: 'ui-serif',
     rounded: 'ui-rounded',
     mono: 'ui-monospace',
   },
-  default: {
-    sans: 'normal',
+  android: {
+    display: 'sans-serif-medium',
+    heading: 'sans-serif-medium',
+    body: 'sans-serif',
+    sans: 'sans-serif',
     serif: 'serif',
-    rounded: 'normal',
+    rounded: 'sans-serif',
     mono: 'monospace',
   },
   web: {
+    display: 'var(--font-display)',
+    heading: 'var(--font-heading)',
+    body: 'var(--font-body)',
     sans: 'var(--font-display)',
     serif: 'var(--font-serif)',
     rounded: 'var(--font-rounded)',
     mono: 'var(--font-mono)',
   },
-});
+  default: {
+    display: 'normal',
+    heading: 'normal',
+    body: 'normal',
+    sans: 'normal',
+    serif: 'serif',
+    rounded: 'normal',
+    mono: 'monospace',
+  },
+})!;
 
 export const Spacing = {
   half: 2,
