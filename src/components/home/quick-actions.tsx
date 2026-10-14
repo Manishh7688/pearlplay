@@ -12,34 +12,42 @@ export function QuickActions() {
   const actions = [
     {
       id: 'checkin',
-      title: 'Check-in',
+      title: 'Check-In',
+      subtitle: 'Daily Bonus',
       icon: 'calendar-check',
       color: theme.primary,
       bgColor: theme.primarySurface,
+      borderColor: theme.primaryBorder,
       route: '/checkin' as const,
     },
     {
       id: 'invite',
       title: 'Invite',
+      subtitle: '15% Rebate',
       icon: 'account-multiple-plus',
-      color: theme.vipDark,
+      color: theme.vip,
       bgColor: theme.vipLight,
+      borderColor: theme.vipBorder,
       route: '/team' as const,
     },
     {
       id: 'recharge',
-      title: 'Add money',
+      title: 'Recharge',
+      subtitle: 'Instant UPI',
       icon: 'wallet-plus',
       color: theme.accent,
       bgColor: theme.accentLight,
+      borderColor: theme.border,
       route: '/recharge' as const,
     },
     {
       id: 'withdraw',
       title: 'Withdraw',
+      subtitle: '0% Tax Fee',
       icon: 'bank-transfer-out',
-      color: theme.primary,
-      bgColor: theme.backgroundElement,
+      color: theme.success,
+      bgColor: theme.successLight,
+      borderColor: theme.primaryBorder,
       route: '/withdraw' as const,
     },
   ];
@@ -49,7 +57,7 @@ export function QuickActions() {
       {actions.map((act) => (
         <TouchableOpacity
           key={act.id}
-          activeOpacity={0.8}
+          activeOpacity={0.82}
           onPress={() => router.push(act.route as any)}
           style={[
             styles.actionCard,
@@ -58,10 +66,22 @@ export function QuickActions() {
               borderColor: theme.cardBorder,
             },
           ]}>
-          <View style={[styles.iconCircle, { backgroundColor: act.bgColor }]}>
+          <View
+            style={[
+              styles.iconCircle,
+              {
+                backgroundColor: act.bgColor,
+                borderColor: act.borderColor,
+              },
+            ]}>
             <Icon name={act.icon} size={22} color={act.color} />
           </View>
-          <Text style={[styles.actionTitle, { color: theme.text }]}>{act.title}</Text>
+          <Text style={[styles.actionTitle, { color: theme.text }]} numberOfLines={1}>
+            {act.title}
+          </Text>
+          <Text style={[styles.actionSub, { color: theme.textMuted }]} numberOfLines={1}>
+            {act.subtitle}
+          </Text>
         </TouchableOpacity>
       ))}
     </View>
@@ -72,14 +92,13 @@ const styles = StyleSheet.create({
   container: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    marginVertical: Spacing.three,
-    gap: Spacing.two,
+    gap: Spacing.two + 2,
   },
   actionCard: {
     flex: 1,
     alignItems: 'center',
-    paddingVertical: Spacing.three,
-    paddingHorizontal: Spacing.one,
+    paddingVertical: 14,
+    paddingHorizontal: 6,
     borderRadius: Radius.lg,
     borderWidth: 1,
     ...Shadows.sm,
@@ -87,16 +106,22 @@ const styles = StyleSheet.create({
   iconCircle: {
     width: 46,
     height: 46,
-    borderRadius: Radius.full,
+    borderRadius: 15,
     alignItems: 'center',
     justifyContent: 'center',
-    marginBottom: Spacing.two,
+    marginBottom: 8,
+    borderWidth: 1,
   },
   actionTitle: {
-    fontSize: 12,
-    fontWeight: '700',
+    fontSize: 13,
+    fontWeight: '800',
     textAlign: 'center',
     letterSpacing: -0.2,
-    lineHeight: 16,
+  },
+  actionSub: {
+    fontSize: 10,
+    fontWeight: '600',
+    textAlign: 'center',
+    marginTop: 2,
   },
 });

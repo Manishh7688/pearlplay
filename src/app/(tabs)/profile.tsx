@@ -8,16 +8,17 @@ import {
   RefreshControl,
   Alert,
   Platform,
+  useWindowDimensions,
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Icon as Ionicons } from '@/components/ui/icon';
-import { useTheme } from '@/hooks/use-theme';
+import { useTheme, useThemeMode } from '@/hooks/use-theme';
 import { useUserProfile } from '@/hooks/use-queries';
-import { useResetDemoMutation } from '@/hooks/use-mutations';
+import { StorageService } from '@/services/storage';
 import { ScreenHeader } from '@/components/ui/screen-header';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/components/ui/toast';
-import { feedColumn, Radius, Shadows, Spacing } from '@/theme';
+import { feedColumn, Layout, Radius, Shadows, Spacing } from '@/theme';
 
 interface ProfileMenuItem {
   id: string;
@@ -36,10 +37,12 @@ interface ProfileMenuGroup {
 
 export default function ProfileScreen() {
   const theme = useTheme();
+  const { mode, toggleTheme } = useThemeMode();
   const router = useRouter();
   const { showToast } = useToast();
-  const { data: user, isLoading, refetch, isRefetching } = useUserProfile();
-  const resetDemo = useResetDemoMutation();
+  const { width } = useWindowDimensions();
+  const isDesktop = width >= Layout.desktop;
+  const { data: user, refetch, isRefetching } = useUserProfile();
 
   const handleAppDownload = () => {
     if (Platform.OS === 'web') {
@@ -60,24 +63,18 @@ export default function ProfileScreen() {
 
   const handleLogout = () => {
     Alert.alert(
-      'Account Management',
-      'Would you like to switch user or reset demo data?',
+      'Sign Out',
+      'Are you sure you want to log out of your account?',
       [
         { text: 'Cancel', style: 'cancel' },
         {
-          text: 'Reset Demo Data',
+          text: 'Sign Out',
           style: 'destructive',
-          onPress: () => {
-            resetDemo.mutate(undefined, {
-              onSuccess: () => {
-                showToast({ message: 'Demo data reset to default (₹10 balance)', type: 'info' });
-              },
-            });
+          onPress: async () => {
+            await StorageService.clearAuthSession();
+            showToast({ message: 'Logged out successfully', type: 'info' });
+            router.replace('/login');
           },
-        },
-        {
-          text: 'Log In / Switch',
-          onPress: () => router.push('/login' as any),
         },
       ]
     );
@@ -122,8 +119,16 @@ export default function ProfileScreen() {
       ],
     },
     {
-      title: 'Company & Support',
+      title: 'Preferences & Support',
       items: [
+        {
+          id: 'theme',
+          title: mode === 'dark' ? 'Switch to Light Mode' : 'Switch to Dark Mode',
+          subtitle: `Currently using ${mode === 'dark' ? 'Dark' : 'Light'} theme`,
+          icon: mode === 'dark' ? 'weather-sunny' : 'weather-night',
+          color: mode === 'dark' ? theme.warning : theme.primary,
+          action: toggleTheme,
+        },
         {
           id: 'about',
           title: 'About Pearl AgriTech',
@@ -195,14 +200,14 @@ export default function ProfileScreen() {
             <View style={styles.userTextCol}>
               <View style={styles.nameRow}>
                 <Text style={[styles.userName, { color: theme.text }]}>
-                  {user?.username || 'Manish'}
+                  {user?.username || 'Member'}
                 </Text>
                 <Badge variant="primary" size="sm">
                   Verified
                 </Badge>
               </View>
               <Text style={[styles.userPhone, { color: theme.textSecondary }]}>
-                +91 {user?.phone || '7891192158'}
+                +91 {user?.phone || '••••••••••'}
               </Text>
             </View>
 
@@ -219,8 +224,8 @@ export default function ProfileScreen() {
             style={[
               styles.balanceBox,
               {
-                backgroundColor: theme.primaryDark,
-                borderColor: theme.primaryBorder,
+                backgroundColor: theme.hero,
+                borderColor: 'rgba(167, 243, 208, 0.14)',
               },
             ]}>
             <View>
@@ -234,7 +239,7 @@ export default function ProfileScreen() {
               activeOpacity={0.85}
               onPress={() => router.push('/recharge' as any)}
               style={styles.rechargeNowBtn}>
-              <Ionicons name="flash" size={16} color="#FFFFFF" />
+              <Ionicons name="flash" size={16} color="#042F22" />
               <Text style={styles.rechargeNowText}>Recharge</Text>
             </TouchableOpacity>
           </View>
@@ -243,7 +248,7 @@ export default function ProfileScreen() {
           <View style={styles.statsRow}>
             <View style={styles.statCol}>
               <Text style={[styles.statNum, { color: theme.text }]}>
-                ₹{(user?.totalRecharge ?? 0).toLocaleString()}
+                ₹{(user?.totalRecharge ?? 0).toLocaleString('en-IN')}
               </Text>
               <Text style={[styles.statTitle, { color: theme.textSecondary }]}>
                 Recharge
@@ -254,7 +259,7 @@ export default function ProfileScreen() {
 
             <View style={styles.statCol}>
               <Text style={[styles.statNum, { color: theme.text }]}>
-                ₹{(user?.totalWithdraw ?? 0).toLocaleString()}
+                ₹{(user?.totalWithdraw ?? 0).toLocaleString('en-IN')}
               </Text>
               <Text style={[styles.statTitle, { color: theme.textSecondary }]}>
                 Withdraw
@@ -265,7 +270,7 @@ export default function ProfileScreen() {
 
             <View style={styles.statCol}>
               <Text style={[styles.statNum, { color: theme.vip }]}>
-                ₹{(user?.totalWelfare ?? 0).toLocaleString()}
+                ₹{(user?.totalWelfare ?? 0).toLocaleString('en-IN')}
               </Text>
               <Text style={[styles.statTitle, { color: theme.textSecondary }]}>
                 Welfare
@@ -274,60 +279,62 @@ export default function ProfileScreen() {
           </View>
         </View>
 
-        {/* Menu Sections */}
-        {menuSections.map((sec) => (
-          <View key={sec.title} style={styles.menuGroup}>
-            <Text style={[styles.groupTitle, { color: theme.textSecondary }]}>
-              {sec.title}
-            </Text>
+        {/* Responsive Menu Sections: 2-Column Grid on Desktop, Stacked on Mobile */}
+        <View style={[styles.menuGrid, isDesktop && styles.menuGridDesktop]}>
+          {menuSections.map((sec) => (
+            <View key={sec.title} style={[styles.menuGroup, isDesktop && styles.menuGroupDesktop]}>
+              <Text style={[styles.groupTitle, { color: theme.textSecondary }]}>
+                {sec.title}
+              </Text>
 
-            <View
-              style={[
-                styles.menuCard,
-                {
-                  backgroundColor: theme.surface,
-                  borderColor: theme.cardBorder,
-                },
-              ]}>
-              {sec.items.map((item, idx) => {
-                const isLast = idx === sec.items.length - 1;
-                return (
-                  <TouchableOpacity
-                    key={item.id}
-                    activeOpacity={0.7}
-                    onPress={() => {
-                      if (item.action) {
-                        item.action();
-                      } else if (item.route) {
-                        router.push(item.route as any);
-                      }
-                    }}
-                    style={[
-                      styles.menuItem,
-                      !isLast && { borderBottomWidth: 1, borderBottomColor: theme.borderSubtle },
-                    ]}>
-                    <View style={[styles.menuIconCircle, { backgroundColor: theme.surfaceSubtle }]}>
-                      <Ionicons name={item.icon} size={20} color={item.color} />
-                    </View>
+              <View
+                style={[
+                  styles.menuCard,
+                  {
+                    backgroundColor: theme.surface,
+                    borderColor: theme.cardBorder,
+                  },
+                ]}>
+                {sec.items.map((item, idx) => {
+                  const isLast = idx === sec.items.length - 1;
+                  return (
+                    <TouchableOpacity
+                      key={item.id}
+                      activeOpacity={0.7}
+                      onPress={() => {
+                        if (item.action) {
+                          item.action();
+                        } else if (item.route) {
+                          router.push(item.route as any);
+                        }
+                      }}
+                      style={[
+                        styles.menuItem,
+                        !isLast && { borderBottomWidth: 1, borderBottomColor: theme.borderSubtle },
+                      ]}>
+                      <View style={[styles.menuIconCircle, { backgroundColor: theme.surfaceSubtle }]}>
+                        <Ionicons name={item.icon} size={20} color={item.color} />
+                      </View>
 
-                    <View style={styles.menuTextWrap}>
-                      <Text style={[styles.menuTitle, { color: theme.text }]}>
-                        {item.title}
-                      </Text>
-                      {item.subtitle ? (
-                        <Text style={[styles.menuSub, { color: theme.textSecondary }]}>
-                          {item.subtitle}
+                      <View style={styles.menuTextWrap}>
+                        <Text style={[styles.menuTitle, { color: theme.text }]}>
+                          {item.title}
                         </Text>
-                      ) : null}
-                    </View>
+                        {item.subtitle ? (
+                          <Text style={[styles.menuSub, { color: theme.textSecondary }]}>
+                            {item.subtitle}
+                          </Text>
+                        ) : null}
+                      </View>
 
-                    <Ionicons name="chevron-forward" size={18} color={theme.textMuted} />
-                  </TouchableOpacity>
-                );
-              })}
+                      <Ionicons name="chevron-forward" size={18} color={theme.textMuted} />
+                    </TouchableOpacity>
+                  );
+                })}
+              </View>
             </View>
-          </View>
-        ))}
+          ))}
+        </View>
 
         {/* Logout / Exit App Button */}
         <TouchableOpacity
@@ -336,7 +343,7 @@ export default function ProfileScreen() {
           style={[styles.logoutBtn, { backgroundColor: theme.surface, borderColor: theme.border }]}>
           <Ionicons name="log-out-outline" size={18} color={theme.danger} />
           <Text style={[styles.logoutText, { color: theme.danger }]}>
-            Exit App / Switch Account
+            Sign Out
           </Text>
         </TouchableOpacity>
       </ScrollView>
@@ -411,6 +418,8 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
+    flexWrap: 'wrap',
+    gap: 8,
     borderWidth: 1,
     marginBottom: Spacing.three,
   },
@@ -436,9 +445,9 @@ const styles = StyleSheet.create({
     borderRadius: Radius.full,
   },
   rechargeNowText: {
-    color: '#FFFFFF',
+    color: '#042F22',
     fontSize: 13,
-    fontWeight: '700',
+    fontWeight: '800',
   },
   statsRow: {
     flexDirection: 'row',
@@ -463,8 +472,19 @@ const styles = StyleSheet.create({
     width: 1,
     height: 22,
   },
-  menuGroup: {
+  menuGrid: {
+    gap: Spacing.four,
     marginBottom: Spacing.four,
+  },
+  menuGridDesktop: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+  },
+  menuGroup: {
+    width: '100%',
+  },
+  menuGroupDesktop: {
+    flex: 1,
   },
   groupTitle: {
     fontSize: 12,
@@ -514,7 +534,6 @@ const styles = StyleSheet.create({
     paddingVertical: Spacing.three,
     borderRadius: Radius.lg,
     borderWidth: 1,
-    marginTop: Spacing.two,
     marginBottom: Spacing.four,
   },
   logoutText: {

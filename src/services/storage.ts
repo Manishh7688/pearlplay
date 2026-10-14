@@ -24,6 +24,7 @@ const STORAGE_KEYS = {
   REDEEMED_CODES: '@pearl_redeemed_codes',
   ACCOUNTS: '@pearl_accounts',
   ACCOUNT_BUNDLES: '@pearl_account_bundles',
+  AUTH_SESSION: '@pearl_auth_session',
 };
 
 const EMPTY_BANK: BankDetails = {
@@ -60,8 +61,8 @@ function welcomeTransactions(): TransactionRecord[] {
       title: 'Platform Welcome Bonus',
       amount: 10,
       status: 'success',
-      date: new Date(Date.now() - 3600000 * 24).toISOString(),
-      description: 'New user registration reward (₹10)',
+      date: new Date().toISOString(),
+      description: 'New user registration reward (₹10 credited)',
     },
   ];
 }
@@ -102,12 +103,41 @@ async function setItem<T>(key: string, value: T): Promise<void> {
 }
 
 export const StorageService = {
+  async getAuthSession(): Promise<string | null> {
+    return getItem<string | null>(STORAGE_KEYS.AUTH_SESSION, null);
+  },
+
+  async setAuthSession(phone: string): Promise<void> {
+    await setItem(STORAGE_KEYS.AUTH_SESSION, phone);
+  },
+
+  async clearAuthSession(): Promise<void> {
+    try {
+      await AsyncStorage.removeItem(STORAGE_KEYS.AUTH_SESSION);
+    } catch {}
+    delete memoryStore[STORAGE_KEYS.AUTH_SESSION];
+  },
+
   async getUserProfile(): Promise<UserProfile> {
+    const activePhone = await this.getAuthSession();
+    if (activePhone) {
+      const book = await getItem<Record<string, AccountBundle>>(STORAGE_KEYS.ACCOUNT_BUNDLES, {});
+      if (book[activePhone]?.profile) {
+        return book[activePhone].profile;
+      }
+    }
     return getItem<UserProfile>(STORAGE_KEYS.USER_PROFILE, INITIAL_USER);
   },
 
   async setUserProfile(profile: UserProfile): Promise<void> {
     await setItem(STORAGE_KEYS.USER_PROFILE, profile);
+    if (profile.phone) {
+      const book = await getItem<Record<string, AccountBundle>>(STORAGE_KEYS.ACCOUNT_BUNDLES, {});
+      if (book[profile.phone]) {
+        book[profile.phone].profile = profile;
+        await setItem(STORAGE_KEYS.ACCOUNT_BUNDLES, book);
+      }
+    }
   },
 
   async getBankDetails(): Promise<BankDetails> {
@@ -169,30 +199,8 @@ export const StorageService = {
   },
 
   async getAccounts(): Promise<StoredAccount[]> {
-    const stored = await getItem<StoredAccount[] | null>(STORAGE_KEYS.ACCOUNTS, null);
-    if (stored && stored.length > 0) {
-      return stored;
-    }
-    const profile = await this.getUserProfile();
-    const seeded: StoredAccount[] = [
-      {
-        name: profile.phone === INITIAL_USER.phone ? profile.username || 'Manish' : 'Manish',
-        phone: INITIAL_USER.phone,
-        password: '123456',
-      },
-    ];
-    if (/^[6-9]\d{9}$/.test(profile.phone) && profile.phone !== INITIAL_USER.phone) {
-      seeded.push({
-        name: profile.username || 'Member',
-        phone: profile.phone,
-        password: '123456',
-      });
-      const book = await getItem<Record<string, AccountBundle>>(STORAGE_KEYS.ACCOUNT_BUNDLES, {});
-      book[profile.phone] = await this.captureBundle();
-      await setItem(STORAGE_KEYS.ACCOUNT_BUNDLES, book);
-    }
-    await setItem(STORAGE_KEYS.ACCOUNTS, seeded);
-    return seeded;
+    const stored = await getItem<StoredAccount[]>(STORAGE_KEYS.ACCOUNTS, []);
+    return stored || [];
   },
 
   async setAccounts(accounts: StoredAccount[]): Promise<void> {
@@ -200,18 +208,7 @@ export const StorageService = {
   },
 
   async switchToAccount(account: StoredAccount, mode: 'login' | 'register'): Promise<UserProfile> {
-    const current = await this.getUserProfile();
     const book = await getItem<Record<string, AccountBundle>>(STORAGE_KEYS.ACCOUNT_BUNDLES, {});
-
-    if (mode === 'login' && current.phone === account.phone) {
-      const updated = { ...current, username: account.name || current.username };
-      await this.setUserProfile(updated);
-      return updated;
-    }
-
-    if (current.phone) {
-      book[current.phone] = await this.captureBundle();
-    }
 
     const next =
       mode === 'register'
@@ -220,6 +217,7 @@ export const StorageService = {
     book[account.phone] = next;
     await setItem(STORAGE_KEYS.ACCOUNT_BUNDLES, book);
     await this.applyBundle(next);
+    await this.setAuthSession(account.phone);
     return next.profile;
   },
 
@@ -241,7 +239,11 @@ export const StorageService = {
       transactions: welcomeTransactions(),
       plans: [],
       checkIn: { ...EMPTY_CHECK_IN },
-      team: { ...INITIAL_TEAM_STATS },
+      team: {
+        ...INITIAL_TEAM_STATS,
+        inviteCode: makeInviteCode(),
+        inviteUrl: `https://pearlapp.agri/register?invite=${account.phone}`,
+      },
       redeemed: [],
     };
   },

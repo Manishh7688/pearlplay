@@ -27,15 +27,15 @@ export function BalanceCard({ user, isLoading }: BalanceCardProps) {
         styles.card,
         {
           backgroundColor: theme.hero,
-          borderColor: 'transparent',
+          borderColor: 'rgba(167, 243, 208, 0.14)',
         },
       ]}>
-      {/* Decorative background glow */}
-      <View style={[styles.glowCircle, { backgroundColor: theme.primary }]} />
+      {/* Subtle decorative glow */}
+      <View style={[styles.glowCircle, { backgroundColor: theme.primaryLight }]} />
 
-      {/* Top row: Balance label, eye toggle, and Recharge button */}
+      {/* Top row: Wallet Balance + Action buttons */}
       <View style={styles.topRow}>
-        <View>
+        <View style={styles.balanceInfo}>
           <View style={styles.labelRow}>
             <Text style={styles.labelText}>Wallet Balance</Text>
             <TouchableOpacity
@@ -50,42 +50,59 @@ export function BalanceCard({ user, isLoading }: BalanceCardProps) {
             </TouchableOpacity>
           </View>
           <Text style={styles.balanceValue}>
-            {isLoading ? '••••••' : showBalance ? `₹${balance.toFixed(2)}` : '₹••••••'}
+            {isLoading
+              ? '₹ ••••••'
+              : showBalance
+                ? `₹${balance.toLocaleString('en-IN', {
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2,
+                  })}`
+                : '₹ ••••••'}
           </Text>
         </View>
 
-        <TouchableOpacity
-          activeOpacity={0.85}
-          onPress={() => router.push('/recharge')}
-          style={[styles.rechargeBtn, { backgroundColor: theme.primaryLight }]}>
-          <Icon name="wallet-plus" size={18} color={theme.textInverse} />
-          <Text style={styles.rechargeBtnText}>Recharge</Text>
-        </TouchableOpacity>
+        <View style={styles.actionsRow}>
+          <TouchableOpacity
+            activeOpacity={0.85}
+            onPress={() => router.push('/recharge')}
+            style={[styles.rechargeBtn, { backgroundColor: '#10B981' }]}>
+            <Icon name="wallet-plus" size={16} color="#042F22" />
+            <Text style={styles.rechargeBtnText}>Recharge</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            activeOpacity={0.85}
+            onPress={() => router.push('/records')}
+            style={styles.historyBtn}>
+            <Icon name="receipt-text-outline" size={17} color="#ECFDF5" />
+          </TouchableOpacity>
+        </View>
       </View>
 
-      {/* Divider */}
-      <View style={styles.divider} />
-
-      {/* Bottom stats row: Recharge, Withdraw, Welfare */}
-      <View style={styles.statsRow}>
+      {/* Clean 3-column summary strip */}
+      <View style={styles.statsPanel}>
         <View style={styles.statItem}>
           <Text style={styles.statLabel}>Recharge</Text>
-          <Text style={styles.statVal}>₹{totalRecharge.toLocaleString()}</Text>
+          <Text style={styles.statVal}>
+            {showBalance ? `₹${totalRecharge.toLocaleString('en-IN')}` : '₹••••'}
+          </Text>
         </View>
 
         <View style={styles.statDivider} />
 
         <View style={styles.statItem}>
           <Text style={styles.statLabel}>Withdraw</Text>
-          <Text style={styles.statVal}>₹{totalWithdraw.toLocaleString()}</Text>
+          <Text style={styles.statVal}>
+            {showBalance ? `₹${totalWithdraw.toLocaleString('en-IN')}` : '₹••••'}
+          </Text>
         </View>
 
         <View style={styles.statDivider} />
 
         <View style={styles.statItem}>
-          <Text style={styles.statLabel}>Welfare</Text>
-          <Text style={[styles.statVal, { color: '#E8B86A' }]}>
-            ₹{totalWelfare.toLocaleString()}
+          <Text style={styles.statLabel}>Total Yield</Text>
+          <Text style={[styles.statVal, { color: '#FCD34D' }]}>
+            {showBalance ? `₹${totalWelfare.toLocaleString('en-IN')}` : '₹••••'}
           </Text>
         </View>
       </View>
@@ -104,17 +121,24 @@ const styles = StyleSheet.create({
   },
   glowCircle: {
     position: 'absolute',
-    top: -40,
+    top: -50,
     right: -40,
-    width: 140,
-    height: 140,
-    borderRadius: 70,
-    opacity: 0.25,
+    width: 150,
+    height: 150,
+    borderRadius: 75,
+    opacity: 0.18,
   },
   topRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
+    flexWrap: 'wrap',
+    gap: Spacing.two,
+    marginBottom: Spacing.three,
+  },
+  balanceInfo: {
+    flex: 1,
+    minWidth: 150,
   },
   labelRow: {
     flexDirection: 'row',
@@ -122,54 +146,67 @@ const styles = StyleSheet.create({
     gap: 6,
   },
   labelText: {
-    color: '#D5EBDF',
+    color: '#A7F3D0',
     fontSize: 12,
     fontWeight: '600',
-    textTransform: 'uppercase',
-    letterSpacing: 0.5,
+    letterSpacing: 0.3,
   },
   eyeBtn: {
-    padding: 2,
+    padding: 3,
   },
   balanceValue: {
     color: '#FFFFFF',
-    fontSize: 28,
+    fontSize: 30,
     fontWeight: '900',
-    marginTop: 4,
-    letterSpacing: -0.5,
+    marginTop: 2,
+    letterSpacing: -0.6,
+  },
+  actionsRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
   },
   rechargeBtn: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: 8,
-    paddingHorizontal: 14,
+    paddingVertical: 9,
+    paddingHorizontal: 15,
     borderRadius: Radius.full,
     gap: 6,
-    ...Shadows.sm,
   },
   rechargeBtnText: {
-    color: '#FFFFFF',
-    fontSize: 14,
-    fontWeight: '700',
+    color: '#042F22',
+    fontSize: 13,
+    fontWeight: '800',
   },
-  divider: {
-    height: 1,
+  historyBtn: {
+    width: 38,
+    height: 38,
+    borderRadius: Radius.full,
+    alignItems: 'center',
+    justifyContent: 'center',
     backgroundColor: 'rgba(255, 255, 255, 0.12)',
-    marginVertical: Spacing.three,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.15)',
   },
-  statsRow: {
+  statsPanel: {
     flexDirection: 'row',
     justifyContent: 'space-around',
     alignItems: 'center',
+    backgroundColor: 'rgba(255, 255, 255, 0.08)',
+    borderRadius: Radius.lg,
+    paddingVertical: 11,
+    paddingHorizontal: 8,
   },
   statItem: {
     alignItems: 'center',
     flex: 1,
   },
   statLabel: {
-    color: '#D5EBDF',
+    color: '#D1FAE5',
     fontSize: 11,
-    fontWeight: '500',
+    fontWeight: '600',
+    opacity: 0.85,
   },
   statVal: {
     color: '#FFFFFF',
@@ -180,6 +217,6 @@ const styles = StyleSheet.create({
   statDivider: {
     width: 1,
     height: 22,
-    backgroundColor: 'rgba(255, 255, 255, 0.15)',
+    backgroundColor: 'rgba(255, 255, 255, 0.14)',
   },
 });

@@ -3,94 +3,96 @@ import { Platform } from 'react-native';
 
 export const Colors = {
   light: {
-    primary: '#1B7A4E',
-    primaryDark: '#0E3D28',
-    primaryLight: '#3DAB74',
-    primarySurface: '#E7F6EE',
-    primaryBorder: '#B7E4C9',
+    primary: '#059669',
+    primaryDark: '#047857',
+    primaryLight: '#10B981',
+    primarySurface: '#ECFDF5',
+    primaryBorder: '#A7F3D0',
 
-    vip: '#C4812A',
-    vipLight: '#FFF4E0',
-    vipDark: '#7A4E10',
-    vipBorder: '#F3D7A1',
+    vip: '#D97706',
+    vipLight: '#FFFBEB',
+    vipDark: '#92400E',
+    vipBorder: '#FDE68A',
 
-    accent: '#3D6B8C',
-    accentLight: '#E7F1F6',
+    accent: '#0284C7',
+    accentLight: '#E0F2FE',
 
-    background: '#F4F1EA',
-    backgroundElement: '#E7E1D6',
-    backgroundSelected: '#DCEFE4',
+    background: '#F4F7F6',
+    backgroundElement: '#E6EFEA',
+    backgroundSelected: '#D1FAE5',
 
-    surface: '#FFFCF8',
+    surface: '#FFFFFF',
     surfaceElevated: '#FFFFFF',
-    surfaceSubtle: '#F7F4EE',
+    surfaceSubtle: '#F8FAFC',
 
-    border: '#E4DDD0',
-    borderSubtle: '#EFEAE1',
-    cardBorder: '#E7E0D4',
+    border: '#E2E8F0',
+    borderSubtle: '#F1F5F9',
+    cardBorder: '#E2E8F0',
 
-    text: '#1C241F',
-    textSecondary: '#5C675F',
-    textMuted: '#8B938C',
+    text: '#0F172A',
+    textSecondary: '#475569',
+    textMuted: '#64748B',
     textInverse: '#FFFFFF',
 
-    hero: '#12392A',
-    heroMuted: '#D5EBDF',
-    heroAccent: '#E8B86A',
+    hero: '#062E22',
+    heroMuted: '#A7F3D0',
+    heroAccent: '#FBBF24',
 
-    success: '#1F9D68',
-    successLight: '#DDF6EA',
-    warning: '#D97706',
+    success: '#10B981',
+    successLight: '#D1FAE5',
+    warning: '#F59E0B',
     warningLight: '#FEF3C7',
-    danger: '#DC4C4C',
-    dangerLight: '#FDECEC',
+    danger: '#EF4444',
+    dangerLight: '#FEE2E2',
   },
   dark: {
-    primary: '#3DAB74',
-    primaryDark: '#166B45',
-    primaryLight: '#6FCB9A',
-    primarySurface: '#143226',
-    primaryBorder: '#1E5340',
+    primary: '#10B981',
+    primaryDark: '#059669',
+    primaryLight: '#34D399',
+    primarySurface: '#0D281E',
+    primaryBorder: '#154634',
 
-    vip: '#E8B86A',
-    vipLight: '#3A2C14',
-    vipDark: '#F3D7A1',
-    vipBorder: '#6A4E22',
+    vip: '#F59E0B',
+    vipLight: '#2A1F0D',
+    vipDark: '#FDE68A',
+    vipBorder: '#5C4013',
 
-    accent: '#7BA7C4',
-    accentLight: '#1A2C38',
+    accent: '#38BDF8',
+    accentLight: '#0C2536',
 
-    background: '#101612',
-    backgroundElement: '#1C2822',
-    backgroundSelected: '#1E3A2C',
+    background: '#0A110E',
+    backgroundElement: '#13201A',
+    backgroundSelected: '#123124',
 
-    surface: '#18211C',
-    surfaceElevated: '#212C26',
-    surfaceSubtle: '#141C18',
+    surface: '#111C17',
+    surfaceElevated: '#172620',
+    surfaceSubtle: '#0D1612',
 
-    border: '#2A3A32',
-    borderSubtle: '#1E2B25',
-    cardBorder: '#31443A',
+    border: '#1E3028',
+    borderSubtle: '#16241E',
+    cardBorder: '#1E3028',
 
-    text: '#F6F3EC',
-    textSecondary: '#C5CDC6',
-    textMuted: '#8E9A92',
-    textInverse: '#102018',
+    text: '#F8FAFC',
+    textSecondary: '#94A3B8',
+    textMuted: '#64748B',
+    textInverse: '#062016',
 
-    hero: '#0E2A1E',
-    heroMuted: '#D5EBDF',
-    heroAccent: '#E8B86A',
+    hero: '#07231A',
+    heroMuted: '#A7F3D0',
+    heroAccent: '#FBBF24',
 
-    success: '#4ADE80',
-    successLight: '#143226',
+    success: '#34D399',
+    successLight: '#0D281E',
     warning: '#FBBF24',
-    warningLight: '#3A2C14',
+    warningLight: '#2A1F0D',
     danger: '#F87171',
-    dangerLight: '#3F1D1D',
+    dangerLight: '#311515',
   },
 } as const;
 
-export type ThemeColors = typeof Colors.light;
+export type ThemeColors = {
+  [K in keyof typeof Colors.light]: string;
+};
 export type ThemeColor = keyof typeof Colors.light;
 
 export const Fonts = Platform.select({
@@ -126,52 +128,52 @@ export const Spacing = {
 } as const;
 
 export const Radius = {
-  xs: 6,
-  sm: 10,
-  md: 14,
-  lg: 20,
+  xs: 8,
+  sm: 12,
+  md: 16,
+  lg: 22,
   xl: 28,
   full: 9999,
 } as const;
 
 export const Shadows = {
   sm: Platform.select({
-    web: { boxShadow: '0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04)' },
+    web: { boxShadow: '0 2px 8px rgba(15, 23, 42, 0.04), 0 1px 2px rgba(15, 23, 42, 0.03)' },
     default: {
-      shadowColor: '#000',
-      shadowOffset: { width: 0, height: 1 },
+      shadowColor: '#0F172A',
+      shadowOffset: { width: 0, height: 2 },
       shadowOpacity: 0.05,
-      shadowRadius: 3,
+      shadowRadius: 6,
       elevation: 2,
     },
   }),
   md: Platform.select({
-    web: { boxShadow: '0 4px 12px rgba(0,0,0,0.08), 0 2px 4px rgba(0,0,0,0.04)' },
+    web: { boxShadow: '0 8px 24px rgba(15, 23, 42, 0.07), 0 2px 6px rgba(15, 23, 42, 0.04)' },
     default: {
-      shadowColor: '#000',
-      shadowOffset: { width: 0, height: 3 },
+      shadowColor: '#0F172A',
+      shadowOffset: { width: 0, height: 6 },
       shadowOpacity: 0.08,
-      shadowRadius: 8,
+      shadowRadius: 12,
       elevation: 4,
     },
   }),
   lg: Platform.select({
-    web: { boxShadow: '0 12px 24px rgba(0,0,0,0.1), 0 4px 8px rgba(0,0,0,0.05)' },
+    web: { boxShadow: '0 16px 36px rgba(15, 23, 42, 0.11), 0 4px 12px rgba(15, 23, 42, 0.05)' },
     default: {
-      shadowColor: '#000',
-      shadowOffset: { width: 0, height: 6 },
+      shadowColor: '#0F172A',
+      shadowOffset: { width: 0, height: 10 },
       shadowOpacity: 0.12,
-      shadowRadius: 14,
+      shadowRadius: 20,
       elevation: 8,
     },
   }),
   glow: Platform.select({
-    web: { boxShadow: '0 0 20px rgba(27, 122, 78, 0.22)' },
+    web: { boxShadow: '0 8px 28px rgba(5, 150, 105, 0.25)' },
     default: {
-      shadowColor: '#1B7A4E',
-      shadowOffset: { width: 0, height: 4 },
-      shadowOpacity: 0.25,
-      shadowRadius: 12,
+      shadowColor: '#059669',
+      shadowOffset: { width: 0, height: 6 },
+      shadowOpacity: 0.28,
+      shadowRadius: 14,
       elevation: 6,
     },
   }),
@@ -183,8 +185,8 @@ export const MaxContentWidth = 720;
 /** Wide web layout switches the bottom bar into a left sidebar. */
 export const Layout = {
   desktop: 960,
-  grid: 1080,
-  feedMax: 1080,
+  grid: 840,
+  feedMax: 1180,
   formMax: 680,
 } as const;
 

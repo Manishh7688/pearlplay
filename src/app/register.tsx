@@ -35,15 +35,17 @@ export default function RegisterScreen() {
 
   const handleRegister = () => {
     const cleanName = name.trim().replace(/\s+/g, ' ');
+    const cleanPhone = phone.replace(/\D/g, '');
+
     if (cleanName.length < 2) {
-      setErrorMessage('Please enter your name');
+      setErrorMessage('Please enter your full name');
       return;
     }
-    if (!/^[6-9]\d{9}$/.test(phone)) {
-      setErrorMessage('Please enter a valid 10-digit mobile number');
+    if (!/^[6-9]\d{9}$/.test(cleanPhone)) {
+      setErrorMessage('Please enter a valid 10-digit Indian mobile number (e.g. 9876543210)');
       return;
     }
-    if (password.length < 6) {
+    if (!password || password.length < 6) {
       setErrorMessage('Password must be at least 6 characters');
       return;
     }
@@ -54,19 +56,19 @@ export default function RegisterScreen() {
 
     setErrorMessage('');
     registerMutation.mutate(
-      { name: cleanName, phone, password },
+      { name: cleanName, phone: cleanPhone, password },
       {
         onSuccess: (usr) => {
           showToast({
-            message: `Welcome, ${usr.username}. ₹10 sign-up bonus added.`,
+            message: `Welcome, ${usr.username}! ₹10 sign-up bonus credited to wallet.`,
             type: 'success',
           });
           setTimeout(() => {
             router.replace('/(tabs)');
-          }, 600);
+          }, 400);
         },
         onError: (err) => {
-          setErrorMessage(err.message || 'Could not create the account.');
+          setErrorMessage(err.message || 'Could not create account. Please try again.');
         },
       }
     );
@@ -90,7 +92,7 @@ export default function RegisterScreen() {
             Pearl <Text style={{ color: theme.primary }}>AgriTech</Text>
           </Text>
           <Text style={[styles.brandSub, { color: theme.textSecondary }]}>
-            Open an account and start with a ₹10 welcome bonus
+            Open an account and start with an instant ₹10 welcome bonus
           </Text>
         </View>
 
@@ -103,6 +105,7 @@ export default function RegisterScreen() {
 
           <Input
             label="Full Name"
+            placeholder="e.g. Rajesh Sharma"
             value={name}
             onChangeText={(txt) => {
               setName(txt);
@@ -114,7 +117,8 @@ export default function RegisterScreen() {
           />
 
           <Input
-            label="Mobile Number"
+            label="Indian Mobile Number"
+            placeholder="10-digit mobile number"
             value={phone}
             onChangeText={(txt) => {
               setPhone(txt.replace(/\D/g, '').slice(0, 10));
@@ -128,6 +132,7 @@ export default function RegisterScreen() {
 
           <Input
             label="Password"
+            placeholder="Min 6 characters"
             value={password}
             onChangeText={(txt) => {
               setPassword(txt);
@@ -149,6 +154,7 @@ export default function RegisterScreen() {
 
           <Input
             label="Confirm Password"
+            placeholder="Re-enter password"
             value={confirmPassword}
             onChangeText={(txt) => {
               setConfirmPassword(txt);
@@ -176,7 +182,7 @@ export default function RegisterScreen() {
             onPress={handleRegister}
             style={{ marginTop: Spacing.two }}
             rightIcon={<Ionicons name="rocket-outline" size={18} color="#FFFFFF" />}>
-            Create Account
+            Create Account & Get ₹10 Bonus
           </Button>
 
           <View style={styles.switchRow}>
@@ -199,18 +205,18 @@ const styles = StyleSheet.create({
   },
   content: {
     width: '100%',
-    maxWidth: 680,
+    maxWidth: 520,
     alignSelf: 'center',
     padding: Spacing.four,
     paddingBottom: Spacing.seven,
   },
   brandHero: {
     alignItems: 'center',
-    marginVertical: Spacing.five,
+    marginVertical: Spacing.four,
   },
   brandMark: {
-    width: 84,
-    height: 84,
+    width: 80,
+    height: 80,
     borderRadius: 22,
     marginBottom: Spacing.two,
   },
@@ -233,7 +239,7 @@ const styles = StyleSheet.create({
     ...Shadows.sm,
   },
   formHeading: {
-    fontSize: 16,
+    fontSize: 17,
     fontWeight: '800',
     marginBottom: Spacing.three,
   },

@@ -25,24 +25,25 @@ export default function LoginScreen() {
   const { showToast } = useToast();
   const loginMutation = useLoginMutation();
 
-  const [phone, setPhone] = useState('7891192158');
-  const [password, setPassword] = useState('123456');
+  const [phone, setPhone] = useState('');
+  const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
 
   const handleLogin = () => {
-    if (!phone.trim() || phone.length < 10) {
-      setErrorMessage('Please enter a valid 10-digit mobile number');
+    const cleanPhone = phone.replace(/\D/g, '');
+    if (!/^[6-9]\d{9}$/.test(cleanPhone)) {
+      setErrorMessage('Please enter a valid 10-digit Indian mobile number');
       return;
     }
-    if (!password.trim() || password.length < 6) {
+    if (!password || password.length < 6) {
       setErrorMessage('Password must be at least 6 characters');
       return;
     }
 
     setErrorMessage('');
     loginMutation.mutate(
-      { phone, pass: password },
+      { phone: cleanPhone, pass: password },
       {
         onSuccess: (usr) => {
           showToast({
@@ -51,10 +52,10 @@ export default function LoginScreen() {
           });
           setTimeout(() => {
             router.replace('/(tabs)');
-          }, 600);
+          }, 400);
         },
         onError: (err) => {
-          setErrorMessage(err.message || 'Login failed. Please verify credentials.');
+          setErrorMessage(err.message || 'Incorrect mobile number or password.');
         },
       }
     );
@@ -66,7 +67,7 @@ export default function LoginScreen() {
       style={[styles.screen, { backgroundColor: theme.background }]}>
       <ScreenHeader
         title="Account Login"
-        showBack
+        showBack={false}
       />
 
       <ScrollView
@@ -100,9 +101,10 @@ export default function LoginScreen() {
 
           <Input
             label="Mobile Phone Number"
+            placeholder="Enter 10-digit mobile number"
             value={phone}
             onChangeText={(txt) => {
-              setPhone(txt);
+              setPhone(txt.replace(/\D/g, '').slice(0, 10));
               setErrorMessage('');
             }}
             keyboardType="phone-pad"
@@ -113,6 +115,7 @@ export default function LoginScreen() {
 
           <Input
             label="Password"
+            placeholder="Enter password (min 6 characters)"
             value={password}
             onChangeText={(txt) => {
               setPassword(txt);
@@ -134,19 +137,6 @@ export default function LoginScreen() {
             }
             error={errorMessage}
           />
-
-          <View style={styles.forgotRow}>
-            <TouchableOpacity
-              activeOpacity={0.7}
-              onPress={() =>
-                showToast({
-                  message: 'Use default demo credentials: 7891192158 / 123456',
-                  type: 'info',
-                })
-              }>
-              <Text style={[styles.forgotText, { color: theme.primary }]}>Forgot Password?</Text>
-            </TouchableOpacity>
-          </View>
 
           <Button
             variant="primary"
@@ -170,21 +160,16 @@ export default function LoginScreen() {
           </View>
         </View>
 
-        {/* Demo Credentials Helper Pill */}
+        {/* Info card */}
         <View
           style={[
-            styles.demoCredentialsBox,
+            styles.infoCard,
             { backgroundColor: theme.surfaceSubtle, borderColor: theme.borderSubtle },
           ]}>
-          <Ionicons name="information-circle" size={18} color={theme.primary} />
-          <View style={{ flex: 1, marginLeft: Spacing.two }}>
-            <Text style={[styles.demoTitle, { color: theme.text }]}>
-              Demo Testing Credentials
-            </Text>
-            <Text style={[styles.demoBody, { color: theme.textSecondary }]}>
-              Phone: 7891192158 | Password: 123456 (Pre-filled for fast evaluation)
-            </Text>
-          </View>
+          <Ionicons name="shield-checkmark" size={18} color={theme.primary} />
+          <Text style={[styles.infoCardText, { color: theme.textSecondary }]}>
+            Open to all Indian mobile numbers (+91). Receive instant ₹10 welcome bonus upon registration.
+          </Text>
         </View>
       </ScrollView>
     </KeyboardAvoidingView>
@@ -197,18 +182,18 @@ const styles = StyleSheet.create({
   },
   content: {
     width: '100%',
-    maxWidth: 680,
+    maxWidth: 520,
     alignSelf: 'center',
     padding: Spacing.four,
     paddingBottom: Spacing.seven,
   },
   brandHero: {
     alignItems: 'center',
-    marginVertical: Spacing.five,
+    marginVertical: Spacing.four,
   },
   brandMark: {
-    width: 84,
-    height: 84,
+    width: 80,
+    height: 80,
     borderRadius: 22,
     marginBottom: Spacing.two,
   },
@@ -221,6 +206,7 @@ const styles = StyleSheet.create({
     fontSize: 13,
     fontWeight: '500',
     marginTop: 4,
+    textAlign: 'center',
   },
   formCard: {
     padding: Spacing.four,
@@ -230,21 +216,13 @@ const styles = StyleSheet.create({
     ...Shadows.sm,
   },
   formHeading: {
-    fontSize: 16,
+    fontSize: 17,
     fontWeight: '800',
     marginBottom: Spacing.three,
   },
   prefix: {
     fontSize: 15,
     fontWeight: '700',
-  },
-  forgotRow: {
-    alignItems: 'flex-end',
-    marginBottom: Spacing.two,
-  },
-  forgotText: {
-    fontSize: 13,
-    fontWeight: '600',
   },
   switchRow: {
     flexDirection: 'row',
@@ -260,19 +238,17 @@ const styles = StyleSheet.create({
     fontSize: 13,
     fontWeight: '700',
   },
-  demoCredentialsBox: {
+  infoCard: {
     flexDirection: 'row',
     alignItems: 'center',
+    gap: 10,
     padding: Spacing.three,
     borderRadius: Radius.md,
     borderWidth: 1,
   },
-  demoTitle: {
-    fontSize: 13,
-    fontWeight: '700',
-  },
-  demoBody: {
+  infoCardText: {
     fontSize: 12,
-    marginTop: 2,
+    flex: 1,
+    lineHeight: 17,
   },
 });

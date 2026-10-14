@@ -37,6 +37,12 @@ export function ScreenHeader({
     }
   };
 
+  const handleTitlePress = () => {
+    if (Platform.OS === 'web') {
+      router.replace('/');
+    }
+  };
+
   return (
     <View
       style={[
@@ -52,6 +58,7 @@ export function ScreenHeader({
           <TouchableOpacity
             activeOpacity={0.7}
             onPress={handleBack}
+            accessibilityLabel="Go back"
             style={[styles.iconButton, { backgroundColor: theme.primarySurface }]}>
             <Ionicons name="arrow-back" size={20} color={theme.primary} />
           </TouchableOpacity>
@@ -59,7 +66,10 @@ export function ScreenHeader({
           <View style={styles.placeholder} />
         )}
 
-        <View style={styles.titleWrapper}>
+        <TouchableOpacity
+          activeOpacity={Platform.OS === 'web' ? 0.75 : 1}
+          onPress={handleTitlePress}
+          style={styles.titleWrapper}>
           <Text style={[styles.title, { color: theme.text }]} numberOfLines={1}>
             {title}
           </Text>
@@ -68,7 +78,7 @@ export function ScreenHeader({
               {subtitle}
             </Text>
           ) : null}
-        </View>
+        </TouchableOpacity>
 
         {rightAction ? (
           <View style={styles.rightActionWrapper}>{rightAction}</View>

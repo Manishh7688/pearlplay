@@ -175,7 +175,7 @@ export const ApiService = {
       type: 'withdraw',
       title: `Bank Withdrawal to ${bankDetails.bankName || 'Bank'}`,
       amount: amount,
-      status: 'pending', // matching standard fintech withdrawal review status
+      status: 'pending',
       date: new Date().toISOString(),
       description: `Account ending in ••••${bankDetails.accountNumber.slice(-4)} (0% handling fee)`,
       referenceId: `WTX${Math.floor(10000000 + Math.random() * 90000000)}`,
@@ -240,8 +240,6 @@ export const ApiService = {
       throw new Error('You have already claimed today’s check-in bonus. Come back tomorrow!');
     }
 
-    // According to platform notification: Daily Gift Code/CheckIn ₹8 to ₹200 (Requires Plan)
-    // We award between ₹8 to ₹25 randomly for daily check-in
     const reward = Math.floor(Math.random() * 18) + 8; // ₹8 - ₹25
     const todayStr = new Date().toISOString().split('T')[0];
 
@@ -334,36 +332,37 @@ export const ApiService = {
     return StorageService.getTeamStats();
   },
 
-  // Login authentication. Demo account stays 7891192158 / 123456.
+  // Login authentication for any valid Indian mobile number
   async login(phone: string, pass: string): Promise<UserProfile> {
-    await delay(600);
+    await delay(500);
     const cleanPhone = normalizePhone(phone);
     if (!isIndianMobile(cleanPhone)) {
-      throw new Error('Please enter a valid 10-digit mobile number');
+      throw new Error('Please enter a valid 10-digit Indian mobile number');
     }
-    if (pass.length < 6) {
+    if (!pass || pass.length < 6) {
       throw new Error('Password must be at least 6 characters');
     }
 
     const accounts = await StorageService.getAccounts();
     const account = accounts.find((item) => item.phone === cleanPhone);
     if (!account || account.password !== pass) {
-      throw new Error('Incorrect mobile number or password');
+      throw new Error('Incorrect mobile number or password. Please register if you do not have an account.');
     }
     return StorageService.switchToAccount(account, 'login');
   },
 
+  // Register a new Indian mobile account
   async register(input: { name: string; phone: string; password: string }): Promise<UserProfile> {
-    await delay(600);
+    await delay(500);
     const name = input.name.trim().replace(/\s+/g, ' ');
     const phone = normalizePhone(input.phone);
     const password = input.password;
 
     if (name.length < 2) {
-      throw new Error('Please enter your name');
+      throw new Error('Please enter your full name');
     }
     if (!isIndianMobile(phone)) {
-      throw new Error('Please enter a valid 10-digit mobile number');
+      throw new Error('Please enter a valid 10-digit Indian mobile number (e.g. 9876543210)');
     }
     if (password.length < 6) {
       throw new Error('Password must be at least 6 characters');
@@ -377,6 +376,11 @@ export const ApiService = {
     const account: StoredAccount = { name, phone, password };
     await StorageService.setAccounts([...accounts, account]);
     return StorageService.switchToAccount(account, 'register');
+  },
+
+  // Log out active user
+  async logout(): Promise<void> {
+    await StorageService.clearAuthSession();
   },
 
   // Reset demo data to defaults

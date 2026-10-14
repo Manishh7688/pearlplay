@@ -8,36 +8,39 @@ import {
   RefreshControl,
   Linking,
   Platform,
+  useWindowDimensions,
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Icon } from '@/components/ui/icon';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { useTheme } from '@/hooks/use-theme';
+import { useTheme, useThemeMode } from '@/hooks/use-theme';
 import { useUserProfile, usePlans } from '@/hooks/use-queries';
 import { BalanceCard } from '@/components/home/balance-card';
 import { QuickActions } from '@/components/home/quick-actions';
-import { LiveTicker } from '@/components/home/live-ticker';
 import { BannerCarousel } from '@/components/home/banner-carousel';
-import { PlanCard, PlanList } from '@/components/plans/plan-card';
+import { PlanCard } from '@/components/plans/plan-card';
+import { MultiUserPayoutFeed } from '@/components/home/multi-user-payout-feed';
 import { AnnouncementModal } from '@/components/ui/announcement-modal';
 import { InvestModal } from '@/components/ui/invest-modal';
 import { PlanCardSkeleton } from '@/components/ui/loading-skeleton';
 import { ErrorView } from '@/components/ui/error-view';
 import { Plan } from '@/types';
-import { feedColumn, Radius, Shadows, Spacing } from '@/theme';
+import { feedColumn, Layout, Radius, Shadows, Spacing } from '@/theme';
 
 export default function HomeScreen() {
   const theme = useTheme();
+  const { mode, toggleTheme } = useThemeMode();
   const router = useRouter();
   const insets = useSafeAreaInsets();
+  const { width } = useWindowDimensions();
+  const isWideWeb = width >= Layout.desktop;
 
-  const [announcementVisible, setAnnouncementVisible] = useState(false);
+  const [announcementVisible, setAnnouncementVisible] = useState(true);
   const [selectedPlanForInvest, setSelectedPlanForInvest] = useState<Plan | null>(null);
 
   const {
     data: user,
     isLoading: userLoading,
-    isError: userError,
     refetch: refetchUser,
   } = useUserProfile();
 
@@ -59,54 +62,94 @@ export default function HomeScreen() {
     Linking.openURL('https://api.whatsapp.com/send?phone=919876543210').catch(() => {});
   };
 
-  // Featured plan (Subscription VIP 1 or Subscription 1)
-  const featuredPlan = plans?.find((p) => p.isPopular) || plans?.[0];
-  const regularPreviewPlans = plans?.filter((p) => p.category === 'regular').slice(0, 3) || [];
+  // Find the first lowest/minimum entry plan (Subscription 1: Pearl Eco-Hydroponics I, ₹249)
+  const minPlan =
+    plans && plans.length > 0
+      ? plans.reduce((min, p) => (p.price < min.price ? p : min), plans[0])
+      : null;
+
+  const firstName = user?.username ? user.username.split(' ')[0] : 'Investor';
 
   return (
     <View style={[styles.screen, { backgroundColor: theme.background }]}>
-      {/* Top App Bar */}
+      {/* Clean Top App Bar */}
       <View
         style={[
           styles.topBar,
           {
             paddingTop: Math.max(insets.top, Platform.OS === 'web' ? 14 : 10),
             backgroundColor: theme.surface,
-            borderBottomColor: theme.cardBorder,
+            borderBottomColor: theme.border,
           },
         ]}>
         <View style={styles.topBarInner}>
-        <View style={styles.brandRow}>
-          <View style={[styles.brandIconCircle, { backgroundColor: theme.primary }]}>
-            <Icon name="sprout" size={20} color={theme.textInverse} />
-          </View>
-          <View>
-            <View style={styles.brandTitleRow}>
-              <Text style={[styles.brandTitle, { color: theme.text }]}>Pearl AgriTech</Text>
-              <Icon name="check-decagram" size={16} color={theme.primary} />
+          {/* Clickable Brand Row navigating to Home / Root */}
+          <TouchableOpacity
+            activeOpacity={0.7}
+            onPress={() => router.replace('/')}
+            style={styles.brandRow}>
+            <View style={[styles.brandIconCircle, { backgroundColor: theme.primary }]}>
+              <Icon name="sprout" size={20} color="#FFFFFF" />
             </View>
-            <Text style={[styles.brandSubtitle, { color: theme.textSecondary }]}>
-              Yield & Agro-Finance
-            </Text>
+            <View style={styles.brandTextWrap}>
+              <View style={styles.brandTitleRow}>
+                <Text style={[styles.brandTitle, { color: theme.text }]} numberOfLines={1}>
+                  Pearl AgriTech
+                </Text>
+                <Icon name="check-decagram" size={15} color={theme.primary} />
+              </View>
+              <Text style={[styles.brandSubtitle, { color: theme.textSecondary }]} numberOfLines={1}>
+                Hello, {firstName}
+              </Text>
+            </View>
+          </TouchableOpacity>
+
+          <View style={styles.topRightActions}>
+            <TouchableOpacity
+              activeOpacity={0.75}
+              onPress={toggleTheme}
+              accessibilityLabel="Toggle color theme"
+              style={[
+                styles.headerIconBtn,
+                {
+                  backgroundColor: theme.surfaceSubtle,
+                  borderColor: theme.border,
+                },
+              ]}>
+              <Icon
+                name={mode === 'dark' ? 'weather-sunny' : 'weather-night'}
+                size={18}
+                color={mode === 'dark' ? theme.warning : theme.text}
+              />
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              activeOpacity={0.75}
+              onPress={() => router.push('/support')}
+              style={[
+                styles.headerIconBtn,
+                {
+                  backgroundColor: theme.surfaceSubtle,
+                  borderColor: theme.border,
+                },
+              ]}>
+              <Icon name="lifebuoy" size={18} color={theme.text} />
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              activeOpacity={0.75}
+              onPress={() => setAnnouncementVisible(true)}
+              style={[
+                styles.headerIconBtn,
+                {
+                  backgroundColor: theme.surfaceSubtle,
+                  borderColor: theme.border,
+                },
+              ]}>
+              <Icon name="bell-badge-outline" size={18} color={theme.text} />
+              <View style={[styles.unreadDot, { backgroundColor: theme.danger }]} />
+            </TouchableOpacity>
           </View>
-        </View>
-
-        <View style={styles.topRightActions}>
-          <TouchableOpacity
-            activeOpacity={0.7}
-            onPress={() => router.push('/support')}
-            style={[styles.headerIconBtn, { backgroundColor: theme.surfaceSubtle }]}>
-            <Icon name="lifebuoy" size={19} color={theme.text} />
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            activeOpacity={0.7}
-            onPress={() => setAnnouncementVisible(true)}
-            style={[styles.headerIconBtn, { backgroundColor: theme.surfaceSubtle }]}>
-            <Icon name="bell-badge-outline" size={19} color={theme.text} />
-            <View style={[styles.unreadDot, { backgroundColor: theme.danger }]} />
-          </TouchableOpacity>
-        </View>
         </View>
       </View>
 
@@ -122,85 +165,72 @@ export default function HomeScreen() {
             colors={[theme.primary]}
           />
         }>
-        {/* User Balance Card */}
-        <BalanceCard user={user} isLoading={userLoading} />
-
-        {/* Quick Navigation Action Grid (CheckIn, Invite, Recharge, Withdraw) */}
-        <QuickActions />
-
-        {/* Live Withdrawal Proof Ticker */}
-        <LiveTicker />
-
-        {/* High-Tech Agriculture Banner */}
-        <BannerCarousel />
-
-        {/* Special Featured Plan Section */}
-        {featuredPlan ? (
-          <View style={styles.section}>
-            <View style={styles.sectionHeader}>
-              <View style={styles.sectionTitleRow}>
-                <Icon name="crown-outline" size={18} color={theme.vip} />
-                <Text style={[styles.sectionTitle, { color: theme.text }]}>
-                  Special Plan of the Day
-                </Text>
-              </View>
-              <TouchableOpacity
-                activeOpacity={0.7}
-                onPress={() => router.push('/products')}>
-                <Text style={[styles.seeAllText, { color: theme.primary }]}>View All →</Text>
-              </TouchableOpacity>
+        {/* Responsive Hero Section: 2-Column on Desktop Web, Stacked on Mobile */}
+        {isWideWeb ? (
+          <View style={styles.desktopHeroGrid}>
+            <View style={styles.desktopHeroCol}>
+              <BalanceCard user={user} isLoading={userLoading} />
+              <QuickActions />
             </View>
-
-            <PlanCard
-              plan={featuredPlan}
-              onInvest={(p) => setSelectedPlanForInvest(p)}
-              featured
-            />
+            <View style={styles.desktopHeroCol}>
+              <BannerCarousel />
+            </View>
           </View>
-        ) : null}
+        ) : (
+          <View style={styles.mobileHeroStack}>
+            <BalanceCard user={user} isLoading={userLoading} />
+            <QuickActions />
+            <BannerCarousel />
+          </View>
+        )}
 
-        {/* Regular Yield Opportunities Section */}
+        {/* Minimum Entry Plan Spotlight */}
         <View style={styles.section}>
           <View style={styles.sectionHeader}>
-            <View style={styles.sectionTitleRow}>
-              <Icon name="sprout" size={18} color={theme.primary} />
+            <View>
               <Text style={[styles.sectionTitle, { color: theme.text }]}>
-                Daily Income Projects
+                Featured Starter Plan
+              </Text>
+              <Text style={[styles.sectionSubtitle, { color: theme.textSecondary }]}>
+                Lowest entry agro-yield investment project
               </Text>
             </View>
             <TouchableOpacity
-              activeOpacity={0.7}
-              onPress={() => router.push('/products')}>
-              <Text style={[styles.seeAllText, { color: theme.primary }]}>Explore (9) →</Text>
+              activeOpacity={0.75}
+              onPress={() => router.push('/products')}
+              style={[styles.seeAllPill, { backgroundColor: theme.primarySurface }]}>
+              <Text style={[styles.seeAllText, { color: theme.primary }]}>View All Plans (9)</Text>
+              <Icon name="arrow-right" size={14} color={theme.primary} />
             </TouchableOpacity>
           </View>
 
           {plansLoading ? (
-            <>
-              <PlanCardSkeleton />
-              <PlanCardSkeleton />
-            </>
+            <PlanCardSkeleton />
           ) : plansError ? (
             <ErrorView
-              title="Failed to load subscriptions"
-              message="Could not load subscription plans. Tap to retry."
+              title="Failed to load subscription"
+              message="Could not load the featured starter plan. Tap to retry."
               onRetry={refetchPlans}
             />
-          ) : (
-            <PlanList
-              plans={regularPreviewPlans}
+          ) : minPlan ? (
+            <PlanCard
+              plan={minPlan}
+              featured
               onInvest={(p) => setSelectedPlanForInvest(p)}
             />
-          )}
+          ) : null}
         </View>
+
+        {/* Multi-User Real-Time Payout Feed */}
+        <MultiUserPayoutFeed />
       </ScrollView>
 
       {/* Floating WhatsApp Support Button */}
       <TouchableOpacity
         activeOpacity={0.85}
         onPress={handleOpenWhatsApp}
-        style={[styles.floatingWhatsApp, { backgroundColor: '#25D366' }]}>
-        <Icon name="whatsapp" size={28} color={theme.textInverse} />
+        style={[styles.floatingWhatsApp, { backgroundColor: '#10B981' }]}>
+        <Icon name="whatsapp" size={26} color="#FFFFFF" />
       </TouchableOpacity>
 
       {/* Announcement Modal Popup */}
@@ -226,7 +256,7 @@ const styles = StyleSheet.create({
   },
   topBar: {
     paddingHorizontal: Spacing.four,
-    paddingBottom: Spacing.three,
+    paddingBottom: 12,
     borderBottomWidth: 1,
     zIndex: 10,
   },
@@ -235,23 +265,28 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
+    gap: 12,
   },
   brandRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: Spacing.two,
+    gap: 10,
+    flex: 1,
   },
   brandIconCircle: {
     width: 38,
     height: 38,
-    borderRadius: Radius.md,
+    borderRadius: 12,
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  brandTextWrap: {
+    flex: 1,
   },
   brandTitleRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 4,
+    gap: 5,
   },
   brandTitle: {
     fontSize: 17,
@@ -259,13 +294,13 @@ const styles = StyleSheet.create({
     letterSpacing: -0.3,
   },
   brandSubtitle: {
-    fontSize: 11,
+    fontSize: 12,
     fontWeight: '500',
   },
   topRightActions: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: Spacing.two,
+    gap: 8,
   },
   headerIconBtn: {
     width: 36,
@@ -274,6 +309,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     position: 'relative',
+    borderWidth: 1,
   },
   unreadDot: {
     position: 'absolute',
@@ -288,32 +324,57 @@ const styles = StyleSheet.create({
     padding: Spacing.four,
     paddingBottom: Spacing.six,
   },
-  section: {
+  desktopHeroGrid: {
+    flexDirection: 'row',
+    alignItems: 'stretch',
+    gap: Spacing.four,
     marginBottom: Spacing.four,
+  },
+  desktopHeroCol: {
+    flex: 1,
+    gap: Spacing.three,
+    justifyContent: 'space-between',
+  },
+  mobileHeroStack: {
+    gap: Spacing.three,
+    marginBottom: Spacing.four,
+  },
+  section: {
+    marginBottom: Spacing.two,
   },
   sectionHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
     marginBottom: Spacing.three,
-  },
-  sectionTitleRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
+    gap: 8,
+    flexWrap: 'wrap',
   },
   sectionTitle: {
-    fontSize: 16,
+    fontSize: 18,
     fontWeight: '800',
     letterSpacing: -0.3,
   },
+  sectionSubtitle: {
+    fontSize: 12,
+    fontWeight: '500',
+    marginTop: 2,
+  },
+  seeAllPill: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    paddingVertical: 6,
+    paddingHorizontal: 12,
+    borderRadius: Radius.full,
+  },
   seeAllText: {
-    fontSize: 13,
+    fontSize: 12,
     fontWeight: '700',
   },
   floatingWhatsApp: {
     position: 'absolute',
-    bottom: 18,
+    bottom: 20,
     right: 20,
     width: 52,
     height: 52,

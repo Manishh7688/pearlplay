@@ -82,13 +82,13 @@ export function AnnouncementModal({ visible, onClose }: AnnouncementModalProps) 
     <Modal visible={visible} transparent animationType="fade" onRequestClose={onClose}>
       <View style={styles.backdrop}>
         <View style={[styles.dialog, { backgroundColor: theme.surface }]}>
-          {/* Header */}
-          <View style={[styles.header, { backgroundColor: theme.primarySurface }]}>
+          {/* Header with prominent Upper Close Button */}
+          <View style={[styles.header, { backgroundColor: theme.primarySurface, borderBottomColor: theme.cardBorder }]}>
             <View style={styles.badgeRow}>
               <View style={[styles.appLogoCircle, { backgroundColor: theme.primary }]}>
                 <Ionicons name="leaf" size={20} color="#FFFFFF" />
               </View>
-              <View>
+              <View style={{ flex: 1 }}>
                 <Text style={[styles.headerTitle, { color: theme.primaryDark }]}>
                   {notice.title}
                 </Text>
@@ -98,11 +98,19 @@ export function AnnouncementModal({ visible, onClose }: AnnouncementModalProps) 
               </View>
             </View>
 
+            {/* Upper Side Close Button */}
             <TouchableOpacity
               activeOpacity={0.7}
               onPress={onClose}
-              style={[styles.closeTopButton, { backgroundColor: theme.surface }]}>
-              <Ionicons name="close" size={20} color={theme.textSecondary} />
+              accessibilityLabel="Close notice"
+              style={[
+                styles.closeTopButton,
+                {
+                  backgroundColor: theme.surface,
+                  borderColor: theme.border,
+                },
+              ]}>
+              <Ionicons name="close" size={20} color={theme.text} />
             </TouchableOpacity>
           </View>
 
@@ -143,15 +151,6 @@ export function AnnouncementModal({ visible, onClose }: AnnouncementModalProps) 
                 leftIcon={<Ionicons name="paper-plane" size={18} color="#FFFFFF" />}>
                 Join Official Telegram Channel
               </Button>
-
-              <TouchableOpacity
-                activeOpacity={0.7}
-                onPress={onClose}
-                style={[styles.gotItButton, { borderColor: theme.border }]}>
-                <Text style={[styles.gotItText, { color: theme.textSecondary }]}>
-                  Understood & Continue
-                </Text>
-              </TouchableOpacity>
             </View>
           </ScrollView>
         </View>
@@ -170,7 +169,7 @@ const styles = StyleSheet.create({
   },
   dialog: {
     width: '100%',
-    maxWidth: 420,
+    maxWidth: 440,
     maxHeight: '85%',
     borderRadius: Radius.xl,
     overflow: 'hidden',
@@ -182,7 +181,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     borderBottomWidth: 1,
-    borderBottomColor: 'rgba(0,0,0,0.05)',
   },
   badgeRow: {
     flexDirection: 'row',
@@ -208,12 +206,14 @@ const styles = StyleSheet.create({
     marginTop: 2,
   },
   closeTopButton: {
-    width: 32,
-    height: 32,
+    width: 38,
+    height: 38,
     borderRadius: Radius.full,
     alignItems: 'center',
     justifyContent: 'center',
     marginLeft: Spacing.two,
+    borderWidth: 1.5,
+    ...Shadows.sm,
   },
   scrollContent: {
     flexGrow: 0,
@@ -259,14 +259,5 @@ const styles = StyleSheet.create({
   actionSection: {
     marginTop: Spacing.three,
     gap: Spacing.two,
-  },
-  gotItButton: {
-    paddingVertical: Spacing.two,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  gotItText: {
-    fontSize: 14,
-    fontWeight: '600',
   },
 });
