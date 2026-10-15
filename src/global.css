@@ -26,22 +26,32 @@ body,
   --font-serif: Georgia, 'Times New Roman', serif;
 }
 
-/* Global Font Family Rule for all Web & React Native Web Elements */
+/* Global Font Family Rule for all Web & React Native Web Elements (excluding icon fonts & font observer) */
 html,
 body,
 #root,
-div,
-span,
-p,
-a,
-input,
-button,
-textarea,
-select,
-[dir],
-[class*="css-text"],
-[class*="r-"] {
+div:not([style*="font-family"]):not([style*="font:"]):not([aria-hidden="true"]),
+span:not([style*="font-family"]):not([style*="font:"]):not([aria-hidden="true"]),
+p:not([style*="font-family"]),
+a:not([style*="font-family"]),
+input:not([style*="font-family"]),
+button:not([style*="font-family"]),
+textarea:not([style*="font-family"]),
+select:not([style*="font-family"]),
+[dir]:not([style*="font-family"]):not([style*="font:"]):not([aria-hidden="true"]),
+[class*="css-text"]:not([style*="font-family"]),
+[class*="r-"]:not([style*="font-family"]) {
   font-family: var(--font-display) !important;
+}
+
+/* Preserve vector icon fonts across all screens */
+[style*="material-community"],
+[style*="MaterialCommunityIcons"],
+[style*="Ionicons"],
+[style*="ionicons"] {
+  font-family: 'material-community' !important;
+  font-style: normal !important;
+  font-weight: normal !important;
 }
 
 /* Tabular Numbers for Currency and Metrics */

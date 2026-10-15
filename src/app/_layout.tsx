@@ -2,6 +2,8 @@ import React, { useEffect } from 'react';
 import { DarkTheme, DefaultTheme, ThemeProvider, Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import * as SplashScreen from 'expo-splash-screen';
+import { useFonts } from 'expo-font';
+import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ToastProvider } from '@/components/ui/toast';
 import { Colors } from '@/theme';
@@ -70,12 +72,13 @@ function ThemedRootNavigator() {
 }
 
 export default function RootLayout() {
+  const [fontsLoaded, fontError] = useFonts(MaterialCommunityIcons.font);
+
   useEffect(() => {
-    const timer = setTimeout(() => {
+    if (fontsLoaded || fontError) {
       SplashScreen.hideAsync().catch(() => {});
-    }, 400);
-    return () => clearTimeout(timer);
-  }, []);
+    }
+  }, [fontsLoaded, fontError]);
 
   return (
     <QueryClientProvider client={queryClient}>
